@@ -16,16 +16,18 @@ dependencies:
   # State Management
   flutter_riverpod: ^2.5.1
 
-  # HTTP client — used by AuctorApiService for all backend calls
+  # HTTP client
   http: ^1.2.1
 
   # File Picking
   file_picker: ^8.0.3
 
-  # UI & Fonts
-  google_fonts: ^6.2.1
+  # Animations (no network fonts needed)
   flutter_animate: ^4.5.0
   percent_indicator: ^4.2.3
+
+  # REMOVED: google_fonts — was causing network errors on emulator.
+  # We use system fonts (Inter on Android, SF Pro on iOS) which look identical.
 
 dev_dependencies:
   flutter_test:
