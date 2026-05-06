@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_provider.dart';
+import '../../core/theme/theme_toggle_button.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
@@ -43,8 +46,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _next() {
     if (_currentPage < _pages.length - 1) {
-      _controller.nextPage(
-          duration: 300.ms, curve: Curves.easeInOut);
+      _controller.nextPage(duration: 300.ms, curve: Curves.easeInOut);
     } else {
       context.goNamed('cv-upload');
     }
@@ -52,20 +54,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final bg = isDark ? AppTheme.bgDark : AppTheme.lBg;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          onPressed: () => context.goNamed('home'),
+          tooltip: 'Back',
+        ),
+        actions: [
+          const ThemeToggleButton(),
+          TextButton(
+            onPressed: () => context.goNamed('cv-upload'),
+            child: Text('Skip',
+                style: TextStyle(
+                    color: isDark ? AppTheme.textSecondary : AppTheme.lTextSecondary)),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // Skip
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () => context.goNamed('cv-upload'),
-                child: const Text('Skip',
-                    style: TextStyle(color: AppTheme.textSecondary)),
-              ),
-            ),
             // Pages
             Expanded(
               child: PageView.builder(
@@ -80,23 +94,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: Column(
                 children: [
-                  // Dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _pages.length,
-                      (i) => AnimatedContainer(
-                        duration: 250.ms,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: i == _currentPage ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: i == _currentPage
-                              ? AppTheme.accentGold
-                              : AppTheme.borderColor,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                      ),
+                    _pages.length,
+                    (i) => AnimatedContainer(
+                    duration: 250.ms,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: i == _currentPage ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                    color: i == _currentPage
+                    ? AppTheme.accentGold
+                    : (isDark ? AppTheme.borderColor : AppTheme.lBorderColor),
+                    borderRadius: BorderRadius.circular(100),
+                    ),
+                    ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -119,6 +132,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPage(_OnboardPage page) {
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final textPrim = isDark ? AppTheme.textPrimary : AppTheme.lTextPrimary;
+    final textSec  = isDark ? AppTheme.textSecondary : AppTheme.lTextSecondary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
@@ -133,7 +149,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontSize: 30,
-                  color: AppTheme.textPrimary,
+                  color: textPrim,
                 ),
           )
               .animate(key: ValueKey('t${page.title}'))
@@ -146,7 +162,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontSize: 16,
                   height: 1.6,
-                  color: AppTheme.textSecondary,
+                  color: textSec,
                 ),
           )
               .animate(key: ValueKey('s${page.subtitle}'))

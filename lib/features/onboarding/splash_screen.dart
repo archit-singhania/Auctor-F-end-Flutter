@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -22,47 +24,47 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final bg       = isDark ? AppTheme.bgDark : AppTheme.lBg;
+    final textPrim = isDark ? AppTheme.textPrimary : AppTheme.lTextPrimary;
+    final gold     = AppTheme.accentGold;
+    final goldDim  = isDark ? AppTheme.accentGoldDim : AppTheme.accentGoldDim;
+    final logoText = isDark ? AppTheme.bgDark : Colors.white;
+
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: bg,
       body: Stack(
         children: [
-          // Subtle grid in background
           const Positioned.fill(child: _SplashGrid()),
-          // Radial glow
           Center(
             child: Container(
               width: 300, height: 300,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  colors: [Color(0x20C9A84C), Colors.transparent],
+                  colors: [AppTheme.accentGold.withValues(alpha: isDark ? 0.12 : 0.08), Colors.transparent],
                   radius: 0.8,
                 ),
               ),
             ),
           ),
-          // Content
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo mark
                 Container(
                   width: 80, height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.accentGold,
+                    color: gold,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.accentGold.withValues(alpha: 0.4),
-                        blurRadius: 40,
-                      ),
+                      BoxShadow(color: gold.withValues(alpha: 0.4), blurRadius: 40),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text('A',
                       style: TextStyle(
                         fontSize: 40, fontWeight: FontWeight.w900,
-                        color: AppTheme.bgDark, height: 1,
+                        color: logoText, height: 1,
                       )),
                   ),
                 )
@@ -72,12 +74,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
                 const SizedBox(height: 24),
 
-                // Word mark
-                const Text(
+                Text(
                   'AUCTOR',
                   style: TextStyle(
                     fontSize: 28, fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary, letterSpacing: 8,
+                    color: textPrim, letterSpacing: 8,
                   ),
                 )
                 .animate()
@@ -86,28 +87,27 @@ class _SplashScreenState extends State<SplashScreen> {
 
                 const SizedBox(height: 8),
 
-                const Text(
+                Text(
                   'Developer Trust Score',
                   style: TextStyle(
-                    fontSize: 13, color: AppTheme.accentGold,
+                    fontSize: 13, color: gold,
                     letterSpacing: 2, fontWeight: FontWeight.w500,
                   ),
                 ).animate().fadeIn(delay: 700.ms, duration: 600.ms),
 
                 const SizedBox(height: 48),
 
-                // Loading dots
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(3, (i) => Container(
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     width: 6, height: 6,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.accentGoldDim, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: goldDim, shape: BoxShape.circle),
                   ).animate(delay: Duration(milliseconds: 800 + i * 150))
                     .fadeIn(duration: 300.ms)
                     .then()
-                    .shimmer(duration: 1200.ms, color: AppTheme.accentGold)
+                    .shimmer(duration: 1200.ms, color: gold)
                   ),
                 ),
               ],

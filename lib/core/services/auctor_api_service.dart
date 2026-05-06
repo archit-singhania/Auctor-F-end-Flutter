@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import '../constants/app_constants.dart';
 import '../../shared/models/auctor_models.dart';
 
@@ -11,10 +12,9 @@ import '../../shared/models/auctor_models.dart';
 /// AppConstants.useMockData = true   →  returns hardcoded mock data (no backend needed)
 class AuctorApiService {
   /// Returns the correct base URL depending on platform.
-  /// Web runs on the same machine as the server → use localhost directly.
   String get _base {
     if (kIsWeb) return 'http://localhost:8000';
-    return AppConstants.apiBaseUrl; // 10.0.2.2:8000 for Android emulator
+    return AppConstants.apiBaseUrl;
   }
 
   int get _uid => AppConstants.demoUserId;
@@ -27,24 +27,47 @@ class AuctorApiService {
     final uri = Uri.parse('$_base/api/cv/parse').replace(
       queryParameters: {'user_id': '$_uid'},
     );
-    final request = http.MultipartRequest('POST', uri)
-      ..files.add(http.MultipartFile.fromBytes(
+
+    final request = http.MultipartRequest('POST', uri);
+
+    // Explicitly declare content-type as application/pdf.
+    // Flutter file pickers on web/mobile often send application/octet-stream
+    // or omit the MIME type entirely — this ensures the backend always sees PDF.
+    request.files.add(
+      http.MultipartFile.fromBytes(
         'file',
         pdfBytes,
-        filename: fileName,
-      ));
+        filename: fileName.endsWith('.pdf') ? fileName : '$fileName.pdf',
+        contentType: MediaType('application', 'pdf'),
+      ),
+    );
 
     try {
-      final streamed = await request.send().timeout(const Duration(seconds: 30));
+      final streamed = await request.send().timeout(const Duration(seconds: 60));
       final body = await http.Response.fromStream(streamed);
+
+      if (kDebugMode) {
+        debugPrint('[AuctorApi] parseCv status: ${body.statusCode}');
+        debugPrint('[AuctorApi] parseCv body: ${body.body}');
+      }
+
       if (body.statusCode == 200) {
         return ExtractedCvData.fromJson(
             jsonDecode(body.body) as Map<String, dynamic>);
       }
-      throw ApiException('CV parse failed: ${body.statusCode}', body.statusCode);
+
+      // Surface a human-readable error from the FastAPI response
+      String detail = 'CV parse failed (${body.statusCode})';
+      try {
+        final err = jsonDecode(body.body) as Map<String, dynamic>;
+        detail = err['detail']?.toString() ?? detail;
+      } catch (_) {}
+      throw ApiException(detail, body.statusCode);
+    } on ApiException {
+      rethrow;
     } catch (e) {
       if (kDebugMode) debugPrint('[AuctorApi] parseCv error: $e');
-      rethrow;
+      throw ApiException('Network error: $e', 0);
     }
   }
 
