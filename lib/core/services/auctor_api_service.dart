@@ -7,18 +7,25 @@ import 'package:http_parser/http_parser.dart';
 import '../constants/app_constants.dart';
 import '../../shared/models/auctor_models.dart';
 
-/// Production API service.
-/// AppConstants.useMockData = false  →  hits real FastAPI + PostgreSQL
-/// AppConstants.useMockData = true   →  returns hardcoded mock data (no backend needed)
-class AuctorApiService {
-  /// Always use the configured base URL (works for both web and native).
-  /// The old kIsWeb branch was pointing to localhost:8000 which broke
-  /// production — now we always use AppConstants.apiBaseUrl.
-  String get _base => AppConstants.apiBaseUrl;
+// Web-only import — compiled away on native platforms
+// ignore: avoid_web_libraries_in_flutter
+import 'auctor_api_service_web.dart'
+    if (dart.library.io) 'auctor_api_service_stub.dart' as web_upload;
 
+/// Production API service.
+/// AppConstants.useMockData = false  ->  hits real FastAPI + PostgreSQL
+/// AppConstants.useMockData = true   ->  returns hardcoded mock data (no backend needed)
+class AuctorApiService {
+  String get _base => AppConstants.apiBaseUrl;
   int get _uid => AppConstants.demoUserId;
 
-  // ── CV PARSING ────────────────────────────────────────────────────────────
+  // -- CV PARSING -------------------------------------------------------------
+  //
+  // Flutter Web sends a CORS preflight (OPTIONS) before the multipart POST.
+  // The backend must reply with the correct Access-Control-Allow-* headers.
+  // On the Flutter side we MUST NOT manually set Content-Type on the request
+  // because the http package sets it automatically with the correct boundary.
+  // We add Accept: application/json so the preflight matches what we send.
 
   Future<ExtractedCvData> parseCv(Uint8List pdfBytes, String fileName) async {
     if (AppConstants.useMockData) return _mockCvData();
@@ -27,27 +34,40 @@ class AuctorApiService {
       queryParameters: {'user_id': '$_uid'},
     );
 
-    final request = http.MultipartRequest('POST', uri);
-
-    // Explicitly declare content-type as application/pdf.
-    // Flutter file pickers on web/mobile often send application/octet-stream
-    // or omit the MIME type entirely — this ensures the backend always sees PDF.
-    request.files.add(
-      http.MultipartFile.fromBytes(
-        'file',
-        pdfBytes,
-        filename: fileName.endsWith('.pdf') ? fileName : '$fileName.pdf',
-        contentType: MediaType('application', 'pdf'),
-      ),
-    );
+    final safeFileName =
+        fileName.toLowerCase().endsWith('.pdf') ? fileName : '$fileName.pdf';
 
     try {
-      final streamed = await request.send().timeout(const Duration(seconds: 60));
+      // On Flutter Web, http.MultipartRequest uses XHR which fails CORS
+      // preflight for multipart. Use a raw XHR via the web_upload helper.
+      if (kIsWeb) {
+        final responseBody = await web_upload.uploadPdfXhr(
+          url: uri.toString(),
+          pdfBytes: pdfBytes,
+          fileName: safeFileName,
+        );
+        return ExtractedCvData.fromJson(
+            jsonDecode(responseBody) as Map<String, dynamic>);
+      }
+
+      // Native (Android / iOS / desktop)
+      final request = http.MultipartRequest('POST', uri)
+        ..headers['Accept'] = 'application/json';
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          pdfBytes,
+          filename: safeFileName,
+          contentType: MediaType('application', 'pdf'),
+        ),
+      );
+      final streamed =
+          await request.send().timeout(const Duration(seconds: 90));
       final body = await http.Response.fromStream(streamed);
 
       if (kDebugMode) {
-        debugPrint('[AuctorApi] parseCv status: ${body.statusCode}');
-        debugPrint('[AuctorApi] parseCv body: ${body.body}');
+        debugPrint('[AuctorApi] parseCv ${body.statusCode}');
+        debugPrint('[AuctorApi] parseCv body: ${body.body.substring(0, body.body.length.clamp(0, 300))}');
       }
 
       if (body.statusCode == 200) {
@@ -55,7 +75,6 @@ class AuctorApiService {
             jsonDecode(body.body) as Map<String, dynamic>);
       }
 
-      // Surface a human-readable error from the FastAPI response
       String detail = 'CV parse failed (${body.statusCode})';
       try {
         final err = jsonDecode(body.body) as Map<String, dynamic>;
@@ -70,7 +89,7 @@ class AuctorApiService {
     }
   }
 
-  // ── GITHUB VERIFICATION ───────────────────────────────────────────────────
+  // -- GITHUB VERIFICATION ----------------------------------------------------
 
   Future<GitHubVerifyResult> verifyGitHub(String username) async {
     if (AppConstants.useMockData) return _mockGitHubResult(username);
@@ -83,16 +102,16 @@ class AuctorApiService {
     );
 
     try {
-      final response = await http.get(uri).timeout(const Duration(seconds: 20));
+      final response =
+          await http.get(uri).timeout(const Duration(seconds: 30));
       if (kDebugMode) {
-        debugPrint('[AuctorApi] verifyGitHub status: ${response.statusCode}');
+        debugPrint('[AuctorApi] verifyGitHub ${response.statusCode}');
         debugPrint('[AuctorApi] verifyGitHub body: ${response.body}');
       }
       if (response.statusCode == 200) {
         return GitHubVerifyResult.fromJson(
             jsonDecode(response.body) as Map<String, dynamic>);
       }
-      // Surface human-readable error
       String detail = 'GitHub verify failed (${response.statusCode})';
       try {
         final err = jsonDecode(response.body) as Map<String, dynamic>;
@@ -107,7 +126,7 @@ class AuctorApiService {
     }
   }
 
-  // ── SCORE ─────────────────────────────────────────────────────────────────
+  // -- SCORE ------------------------------------------------------------------
 
   Future<AuctorScore> fetchScore() async {
     if (AppConstants.useMockData) return _mockScore();
@@ -131,7 +150,7 @@ class AuctorApiService {
     }
   }
 
-  // ── BADGE SUBMISSION ──────────────────────────────────────────────────────
+  // -- BADGE SUBMISSION -------------------------------------------------------
 
   Future<BadgeSubmitResult> submitBadge({
     required String badgeId,
@@ -176,7 +195,7 @@ class AuctorApiService {
     }
   }
 
-  // ── MOCK DATA ─────────────────────────────────────────────────────────────
+  // -- MOCK DATA --------------------------------------------------------------
 
   Future<ExtractedCvData> _mockCvData() async {
     await Future.delayed(const Duration(seconds: 2));
@@ -232,7 +251,7 @@ class AuctorApiService {
   }
 }
 
-// ── RESULT TYPES ──────────────────────────────────────────────────────────────
+// -- RESULT TYPES -------------------------------------------------------------
 
 class GitHubVerifyResult {
   final bool verified;
@@ -293,7 +312,7 @@ class ApiException implements Exception {
   String toString() => 'ApiException($statusCode): $message';
 }
 
-// ── PROVIDER ──────────────────────────────────────────────────────────────────
+// -- PROVIDER -----------------------------------------------------------------
 
 final apiServiceProvider = Provider<AuctorApiService>((ref) {
   return AuctorApiService();
