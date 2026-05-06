@@ -14,30 +14,41 @@ Future<String> uploadPdfXhr({
   final completer = Completer<String>();
 
   final formData = html.FormData();
+  // Create blob with explicit MIME type — required for Railway to accept the file
   final blob = html.Blob([pdfBytes], 'application/pdf');
   formData.appendBlob('file', blob, fileName);
 
   final xhr = html.HttpRequest();
-  xhr.open('POST', url);
+  xhr.open('POST', url, async: true);
+  // Only set Accept — browser must set Content-Type with multipart boundary automatically
   xhr.setRequestHeader('Accept', 'application/json');
-  // Do NOT set Content-Type — the browser sets multipart/form-data + boundary
+  // withCredentials must be false when server uses wildcard or explicit origin CORS
+  xhr.withCredentials = false;
 
   xhr.onLoad.listen((_) {
-    if (xhr.status == 200) {
+    final status = xhr.status ?? 0;
+    if (status == 200) {
       completer.complete(xhr.responseText ?? '');
     } else {
+      // Surface the actual server error message to the UI
+      final body = xhr.responseText ?? 'No response body';
       completer.completeError(
-        Exception('CV parse failed (${xhr.status}): ${xhr.responseText}'),
+        Exception('CV parse failed ($status): $body'),
       );
     }
   });
 
   xhr.onError.listen((_) {
+    // XHR onError fires when:
+    // 1. Network is unreachable
+    // 2. CORS preflight was rejected by the server
+    // 3. Railway service is sleeping / cold-starting
     completer.completeError(
       Exception(
-        'Network error uploading CV. '
-        'Check that the Railway backend is running and CORS allows '
-        'https://auctor-flutter-init.vercel.app',
+        'CORS or network error uploading CV.\n'
+        'The Railway backend rejected the request from this origin.\n'
+        'Make sure GITHUB_TOKEN and OPENAI_API_KEY are set in Railway, '
+        'and that the service is running.',
       ),
     );
   });
@@ -45,7 +56,9 @@ Future<String> uploadPdfXhr({
   xhr.send(formData);
 
   return completer.future.timeout(
-    const Duration(seconds: 90),
-    onTimeout: () => throw Exception('CV upload timed out after 90 seconds'),
+    const Duration(seconds: 120),
+    onTimeout: () => throw Exception(
+      'CV upload timed out (120s). Railway may be cold-starting — try again in 30 seconds.',
+    ),
   );
 }
