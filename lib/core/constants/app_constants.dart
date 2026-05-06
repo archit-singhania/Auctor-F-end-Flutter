@@ -23,7 +23,7 @@ class AppConstants {
   // Android emulator → host machine localhost via 10.0.2.2
   // Physical device  → your machine's LAN IP, e.g. http://192.168.1.10:8000
   // Web (Chrome)     → http://localhost:8000
-  static const String apiBaseUrl = 'http://10.0.2.2:8000';
+  static const String apiBaseUrl = 'https://auctor-b-end-fastapi-production.up.railway.app';
 
   // ── REAL DATA MODE ────────────────────────────────────────────────────────
   // false = all API calls hit the real FastAPI backend + PostgreSQL
