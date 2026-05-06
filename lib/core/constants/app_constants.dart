@@ -20,17 +20,17 @@ class AppConstants {
   static const int badgePassThreshold = 3;
 
   // ── API base URL ──────────────────────────────────────────────────────────
-  // Production → https://api.auctor.dev  (custom domain on Railway)
-  // Android emulator dev → http://10.0.2.2:8000
-  // Physical device dev  → http://YOUR_LAN_IP:8000
-  // Web (Chrome) dev     → http://localhost:8000
+  // ✅ PRODUCTION — Railway deployment URL.
+  //    Update this to your actual Railway service URL from the Railway dashboard.
+  //    Format: https://<your-service>.up.railway.app
   //
-  // Switch between prod and dev by toggling useMockData or changing this value.
-  static const String apiBaseUrl = 'https://api.auctor.dev';
-
-  // ── Dev override (uncomment when testing locally) ─────────────────────────
+  // ⚠️  DO NOT use localhost here — this is compiled into the Vercel web build
+  //     and must point to the publicly accessible Railway backend.
+  //
+  // Local dev overrides (uncomment as needed, comment out the production line):
   // static const String apiBaseUrl = 'http://10.0.2.2:8000'; // Android emulator
-  // static const String apiBaseUrl = 'http://localhost:8000'; // Chrome/Web
+  // static const String apiBaseUrl = 'http://localhost:8000'; // Chrome/Web local
+  static const String apiBaseUrl = 'https://auctorappfastapi-production.up.railway.app';
 
   // ── REAL DATA MODE ────────────────────────────────────────────────────────
   // false = all API calls hit the real FastAPI backend + PostgreSQL

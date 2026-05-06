@@ -11,11 +11,10 @@ import '../../shared/models/auctor_models.dart';
 /// AppConstants.useMockData = false  →  hits real FastAPI + PostgreSQL
 /// AppConstants.useMockData = true   →  returns hardcoded mock data (no backend needed)
 class AuctorApiService {
-  /// Returns the correct base URL depending on platform.
-  String get _base {
-    if (kIsWeb) return 'http://localhost:8000';
-    return AppConstants.apiBaseUrl;
-  }
+  /// Always use the configured base URL (works for both web and native).
+  /// The old kIsWeb branch was pointing to localhost:8000 which broke
+  /// production — now we always use AppConstants.apiBaseUrl.
+  String get _base => AppConstants.apiBaseUrl;
 
   int get _uid => AppConstants.demoUserId;
 
@@ -85,15 +84,26 @@ class AuctorApiService {
 
     try {
       final response = await http.get(uri).timeout(const Duration(seconds: 20));
+      if (kDebugMode) {
+        debugPrint('[AuctorApi] verifyGitHub status: ${response.statusCode}');
+        debugPrint('[AuctorApi] verifyGitHub body: ${response.body}');
+      }
       if (response.statusCode == 200) {
         return GitHubVerifyResult.fromJson(
             jsonDecode(response.body) as Map<String, dynamic>);
       }
-      throw ApiException(
-          'GitHub verify failed: ${response.statusCode}', response.statusCode);
+      // Surface human-readable error
+      String detail = 'GitHub verify failed (${response.statusCode})';
+      try {
+        final err = jsonDecode(response.body) as Map<String, dynamic>;
+        detail = err['detail']?.toString() ?? detail;
+      } catch (_) {}
+      throw ApiException(detail, response.statusCode);
+    } on ApiException {
+      rethrow;
     } catch (e) {
       if (kDebugMode) debugPrint('[AuctorApi] verifyGitHub error: $e');
-      rethrow;
+      throw ApiException('Network error: $e', 0);
     }
   }
 
