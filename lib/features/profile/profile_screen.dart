@@ -8,6 +8,7 @@ import '../../core/theme/theme_provider.dart';
 import '../../core/theme/theme_toggle_button.dart';
 import '../../shared/providers/providers.dart';
 import '../../shared/widgets/auctor_widgets.dart';
+import '../../shared/widgets/auctor_logo.dart';
 import '../cv_upload/cv_state.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -60,21 +61,7 @@ class ProfileScreen extends ConsumerWidget {
                 glowColor: AppTheme.accentGold,
                 child: Column(
                   children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentGold,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(color: AppTheme.accentGold.withValues(alpha: 0.3), blurRadius: 20)
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text('D',
-                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.bgDark)),
-                      ),
-                    ),
+                    const AuctorLogo(size: 72),
                     const SizedBox(height: 16),
                     Text('Developer', style: Theme.of(context).textTheme.headlineMedium),
                     const SizedBox(height: 4),

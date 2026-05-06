@@ -20,10 +20,17 @@ class AppConstants {
   static const int badgePassThreshold = 3;
 
   // ── API base URL ──────────────────────────────────────────────────────────
-  // Android emulator → host machine localhost via 10.0.2.2
-  // Physical device  → your machine's LAN IP, e.g. http://192.168.1.10:8000
-  // Web (Chrome)     → http://localhost:8000
-  static const String apiBaseUrl = 'https://auctor-b-end-fastapi-production.up.railway.app';
+  // Production → https://api.auctor.dev  (custom domain on Railway)
+  // Android emulator dev → http://10.0.2.2:8000
+  // Physical device dev  → http://YOUR_LAN_IP:8000
+  // Web (Chrome) dev     → http://localhost:8000
+  //
+  // Switch between prod and dev by toggling useMockData or changing this value.
+  static const String apiBaseUrl = 'https://api.auctor.dev';
+
+  // ── Dev override (uncomment when testing locally) ─────────────────────────
+  // static const String apiBaseUrl = 'http://10.0.2.2:8000'; // Android emulator
+  // static const String apiBaseUrl = 'http://localhost:8000'; // Chrome/Web
 
   // ── REAL DATA MODE ────────────────────────────────────────────────────────
   // false = all API calls hit the real FastAPI backend + PostgreSQL

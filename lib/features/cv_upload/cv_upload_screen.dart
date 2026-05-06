@@ -8,6 +8,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/theme/theme_toggle_button.dart';
 import '../../core/services/auctor_api_service.dart';
+import '../../shared/widgets/auctor_logo.dart';
 import 'cv_state.dart';
 
 class CvUploadScreen extends ConsumerStatefulWidget {
@@ -74,12 +75,7 @@ class _CvUploadScreenState extends ConsumerState<CvUploadScreen> {
           tooltip: 'Back',
         ),
         title: Row(children: [
-          Container(
-            width: 28, height: 28,
-            decoration: BoxDecoration(color: AppTheme.accentGold, borderRadius: BorderRadius.circular(6)),
-            child: const Center(
-                child: Text('A', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: AppTheme.bgDark))),
-          ),
+          const AuctorLogo(size: 28),
           const SizedBox(width: 10),
           const Text('Auctor'),
         ]),

@@ -7,6 +7,7 @@ import '../../core/theme/theme_provider.dart';
 import '../../core/theme/theme_toggle_button.dart';
 import '../../shared/providers/providers.dart';
 import '../../shared/widgets/auctor_widgets.dart';
+import '../../shared/widgets/auctor_logo.dart';
 import '../cv_upload/cv_state.dart';
 import '../../shared/models/auctor_models.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -26,12 +27,7 @@ class DashboardScreen extends ConsumerWidget {
       backgroundColor: bg,
       appBar: AppBar(
         title: Row(children: [
-          Container(
-            width: 28, height: 28,
-            decoration: BoxDecoration(color: AppTheme.accentGold, borderRadius: BorderRadius.circular(6)),
-            child: const Center(
-                child: Text('A', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: AppTheme.bgDark))),
-          ),
+          const AuctorLogo(size: 28),
           const SizedBox(width: 10),
           const Text('Dashboard'),
         ]),

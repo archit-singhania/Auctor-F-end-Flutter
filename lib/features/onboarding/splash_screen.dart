@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
+import '../../shared/widgets/auctor_logo.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -28,8 +29,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final bg       = isDark ? AppTheme.bgDark : AppTheme.lBg;
     final textPrim = isDark ? AppTheme.textPrimary : AppTheme.lTextPrimary;
     final gold     = AppTheme.accentGold;
-    final goldDim  = isDark ? AppTheme.accentGoldDim : AppTheme.accentGoldDim;
-    final logoText = isDark ? AppTheme.bgDark : Colors.white;
+    final goldDim  = AppTheme.accentGoldDim;
 
     return Scaffold(
       backgroundColor: bg,
@@ -51,23 +51,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 80, height: 80,
-                  decoration: BoxDecoration(
-                    color: gold,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(color: gold.withValues(alpha: 0.4), blurRadius: 40),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text('A',
-                      style: TextStyle(
-                        fontSize: 40, fontWeight: FontWeight.w900,
-                        color: logoText, height: 1,
-                      )),
-                  ),
-                )
+                AuctorLogo(size: 80)
                 .animate()
                 .scale(duration: 600.ms, curve: Curves.easeOutBack)
                 .fadeIn(duration: 400.ms),

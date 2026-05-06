@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/theme/theme_toggle_button.dart';
+import '../../shared/widgets/auctor_logo.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HOME / LANDING SCREEN
@@ -177,12 +178,7 @@ class _LogoMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-        width: 30, height: 30,
-        decoration: BoxDecoration(color: AppTheme.accentGold, borderRadius: BorderRadius.circular(7)),
-        child: const Center(
-            child: Text('A', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.bgDark))),
-      ),
+      const AuctorLogo(size: 30),
       const SizedBox(width: 8),
       Text('Auctor',
           style: TextStyle(
@@ -245,11 +241,7 @@ class _ScoreMockup extends StatelessWidget {
         ),
         child: Column(children: [
           Row(children: [
-            Container(
-                width: 22, height: 22,
-                decoration: BoxDecoration(color: AppTheme.accentGold, borderRadius: BorderRadius.circular(5)),
-                child: const Center(
-                    child: Text('A', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppTheme.bgDark)))),
+            const AuctorLogo(size: 22),
             const SizedBox(width: 8),
             Text('Your Auctor Dashboard',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textPrim)),
