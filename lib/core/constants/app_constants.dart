@@ -30,7 +30,7 @@ class AppConstants {
   // Local dev overrides (uncomment as needed, comment out the production line):
   // static const String apiBaseUrl = 'http://10.0.2.2:8000'; // Android emulator
   // static const String apiBaseUrl = 'http://localhost:8000'; // Chrome/Web local
-  static const String apiBaseUrl = 'https://auctorappfastapi-production.up.railway.app';
+  static const String apiBaseUrl = 'https://auctor-b-end-fastapi-production.up.railway.app';
 
   // ── REAL DATA MODE ────────────────────────────────────────────────────────
   // false = all API calls hit the real FastAPI backend + PostgreSQL

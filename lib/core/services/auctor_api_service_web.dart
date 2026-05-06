@@ -47,8 +47,7 @@ Future<String> uploadPdfXhr({
       Exception(
         'CORS or network error uploading CV.\n'
         'The Railway backend rejected the request from this origin.\n'
-        'Make sure GITHUB_TOKEN and OPENAI_API_KEY are set in Railway, '
-        'and that the service is running.',
+        'Backend URL: https://auctor-b-end-fastapi-production.up.railway.app',
       ),
     );
   });
