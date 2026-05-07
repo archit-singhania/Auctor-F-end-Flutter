@@ -17,8 +17,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to home landing screen after 2.8s
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    // Navigate to home landing screen after 1.2s (keep it snappy)
+    Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) context.goNamed('home');
     });
   }
@@ -53,8 +53,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               children: [
                 AuctorLogo(size: 80)
                 .animate()
-                .scale(duration: 600.ms, curve: Curves.easeOutBack)
-                .fadeIn(duration: 400.ms),
+                .scale(duration: 350.ms, curve: Curves.easeOutBack)
+                .fadeIn(duration: 250.ms),
 
                 const SizedBox(height: 24),
 
@@ -66,8 +66,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   ),
                 )
                 .animate()
-                .fadeIn(delay: 400.ms, duration: 600.ms)
-                .slideY(begin: 0.3, end: 0),
+                .fadeIn(delay: 200.ms, duration: 300.ms)
+                .slideY(begin: 0.2, end: 0),
 
                 const SizedBox(height: 8),
 
@@ -77,7 +77,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     fontSize: 13, color: gold,
                     letterSpacing: 2, fontWeight: FontWeight.w500,
                   ),
-                ).animate().fadeIn(delay: 700.ms, duration: 600.ms),
+                ).animate().fadeIn(delay: 350.ms, duration: 300.ms),
 
                 const SizedBox(height: 48),
 
@@ -88,10 +88,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     width: 6, height: 6,
                     decoration: BoxDecoration(
                       color: goldDim, shape: BoxShape.circle),
-                  ).animate(delay: Duration(milliseconds: 800 + i * 150))
-                    .fadeIn(duration: 300.ms)
+                  ).animate(delay: Duration(milliseconds: 400 + i * 100))
+                    .fadeIn(duration: 200.ms)
                     .then()
-                    .shimmer(duration: 1200.ms, color: gold)
+                    .shimmer(duration: 800.ms, color: gold)
                   ),
                 ),
               ],

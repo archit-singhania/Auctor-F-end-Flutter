@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
 import '../../features/home/home_screen.dart';
 import '../../features/onboarding/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
@@ -9,6 +12,13 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/verification/github_verify_screen.dart';
 import '../../features/badges/badge_challenge_screen.dart';
 import '../../features/profile/profile_screen.dart';
+
+// Call this once before runApp to enable hash routing on web
+void configureUrlStrategy() {
+  if (kIsWeb) {
+    setUrlStrategy(HashUrlStrategy());
+  }
+}
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(

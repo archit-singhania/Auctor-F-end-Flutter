@@ -1,63 +1,57 @@
 // lib/core/services/auctor_api_service_web.dart
-// Used on Flutter Web only. Performs a multipart upload using dart:html
-// XMLHttpRequest, which correctly handles CORS preflight for multipart/form-data.
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+//
+// Flutter Web upload implementation using the standard http package.
+// dart:html is intentionally NOT used here — it is deprecated in Flutter 3.x
+// and causes dart2js compilation errors.
+//
+// The CORS issue that previously required raw XHR is now solved at the backend
+// level (PermissiveCORSMiddleware in main.py echoes the exact Origin back),
+// so http.MultipartRequest works correctly on web.
+
 import 'dart:typed_data';
-import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 Future<String> uploadPdfXhr({
   required String url,
   required Uint8List pdfBytes,
   required String fileName,
 }) async {
-  final completer = Completer<String>();
+  final uri = Uri.parse(url);
 
-  final formData = html.FormData();
-  // Create blob with explicit MIME type — required for Railway to accept the file
-  final blob = html.Blob([pdfBytes], 'application/pdf');
-  formData.appendBlob('file', blob, fileName);
-
-  final xhr = html.HttpRequest();
-  xhr.open('POST', url, async: true);
-  // Only set Accept — browser must set Content-Type with multipart boundary automatically
-  xhr.setRequestHeader('Accept', 'application/json');
-  // withCredentials must be false when server uses wildcard or explicit origin CORS
-  xhr.withCredentials = false;
-
-  xhr.onLoad.listen((_) {
-    final status = xhr.status ?? 0;
-    if (status == 200) {
-      completer.complete(xhr.responseText ?? '');
-    } else {
-      // Surface the actual server error message to the UI
-      final body = xhr.responseText ?? 'No response body';
-      completer.completeError(
-        Exception('CV parse failed ($status): $body'),
-      );
-    }
-  });
-
-  xhr.onError.listen((_) {
-    // XHR onError fires when:
-    // 1. Network is unreachable
-    // 2. CORS preflight was rejected by the server
-    // 3. Railway service is sleeping / cold-starting
-    completer.completeError(
-      Exception(
-        'CORS or network error uploading CV.\n'
-        'The Railway backend rejected the request from this origin.\n'
-        'Backend URL: https://auctor-b-end-fastapi-production.up.railway.app',
-      ),
-    );
-  });
-
-  xhr.send(formData);
-
-  return completer.future.timeout(
-    const Duration(seconds: 120),
-    onTimeout: () => throw Exception(
-      'CV upload timed out (120s). Railway may be cold-starting — try again in 30 seconds.',
+  final request = http.MultipartRequest('POST', uri)
+    ..headers['Accept'] = 'application/json';
+  // Do NOT manually set Content-Type — http sets multipart/form-data + boundary
+  request.files.add(
+    http.MultipartFile.fromBytes(
+      'file',
+      pdfBytes,
+      filename: fileName,
+      contentType: MediaType('application', 'pdf'),
     ),
   );
+
+  final streamed = await request.send().timeout(
+    const Duration(seconds: 120),
+    onTimeout: () => throw Exception(
+      'Request timed out (120s). Railway may be cold-starting — wait 30 seconds and try again.',
+    ),
+  );
+
+  final body = await http.Response.fromStream(streamed);
+
+  if (body.statusCode == 200) return body.body;
+
+  // Surface the exact server error to the UI
+  String detail = 'CV parse failed (${body.statusCode})';
+  try {
+    // Try to extract FastAPI's {"detail": "..."} message
+    final idx = body.body.indexOf('"detail"');
+    if (idx != -1) {
+      final start = body.body.indexOf('"', idx + 9) + 1;
+      final end = body.body.indexOf('"', start);
+      if (start > 0 && end > start) detail = body.body.substring(start, end);
+    }
+  } catch (_) {}
+  throw Exception(detail);
 }

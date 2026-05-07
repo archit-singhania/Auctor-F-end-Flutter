@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -30,6 +30,66 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <style>
+    body { margin: 0; background: #080808; }
+    #loader {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #080808;
+      z-index: 9999;
+      /* No fade-in delay — show instantly */
+    }
+    #loader-logo {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #C9A84C, #7A6230);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, sans-serif; font-size: 24px; font-weight: 800;
+      color: #080808;
+      margin-bottom: 28px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.75; transform: scale(0.93); }
+    }
+    #loader-bar-wrap {
+      width: 100px; height: 2px;
+      background: rgba(201,168,76,0.15);
+      border-radius: 2px; overflow: hidden;
+    }
+    #loader-bar {
+      height: 100%; width: 35%;
+      background: linear-gradient(90deg, #7A6230, #F2C94C);
+      border-radius: 2px;
+      animation: slide 1.0s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(390%); }
+    }
+  </style>
+  <div id="loader">
+    <div id="loader-logo">A</div>
+    <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
+  </div>
+  <script>
+    // Remove loader once Flutter signals it's ready — fast fade
+    window.addEventListener('flutter-first-frame', function() {
+      var loader = document.getElementById('loader');
+      if (loader) {
+        loader.style.transition = 'opacity 0.2s ease';
+        loader.style.opacity = '0';
+        setTimeout(function() { loader.remove(); }, 200);
+      }
+    });
+    // Safety fallback — remove after 12s regardless
+    setTimeout(function() {
+      var loader = document.getElementById('loader');
+      if (loader) loader.remove();
+    }, 12000);
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
