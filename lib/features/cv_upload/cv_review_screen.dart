@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_provider.dart';
 import '../../core/theme/theme_toggle_button.dart';
+import '../../shared/models/auctor_models.dart';
 import '../../shared/widgets/auctor_widgets.dart';
 import 'cv_state.dart';
 
@@ -13,11 +16,32 @@ class CvReviewScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cv = ref.watch(cvDataProvider);
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review Extracted Data'),
+        title: Row(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppTheme.accentTeal.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Text(
+              'STEP 2 OF 4',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 9,
+                letterSpacing: 1.4,
+                color: AppTheme.accentTeal,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Text('Review Extraction'),
+        ]),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => context.goNamed('cv-upload'),
@@ -30,16 +54,32 @@ class CvReviewScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-            // ── Header banner ──────────────────────────────────────────────
-            _HeaderBanner(theme: theme),
-            const SizedBox(height: 24),
+            // ── Success banner ─────────────────────────────────────────────
+            _SuccessBanner(theme: theme)
+                .animate().fadeIn(duration: 300.ms),
+
+            const SizedBox(height: 20),
+
+            // ── Extracted Profiles / Contact ───────────────────────────────
+            if (cv.profiles.hasAny) ...[
+              _SectionLabel(
+                icon: Icons.person_pin_rounded,
+                label: 'Detected Profiles',
+                count: _countProfiles(cv.profiles),
+                color: AppTheme.accentGold,
+              ),
+              const SizedBox(height: 10),
+              _ProfilesCard(profiles: cv.profiles, isDark: isDark)
+                  .animate().fadeIn(delay: 80.ms, duration: 400.ms),
+              const SizedBox(height: 24),
+            ],
 
             // ── Skills ────────────────────────────────────────────────────
             _SectionLabel(
               icon: Icons.build_rounded,
               label: 'Skills Detected',
               count: cv.skills.length,
-              color: AppTheme.accentGold,
+              color: AppTheme.accentBlue,
             ),
             const SizedBox(height: 10),
             cv.skills.isEmpty
@@ -52,7 +92,8 @@ class CvReviewScreen extends ConsumerWidget {
                       spacing: 8, runSpacing: 8,
                       children: cv.skills.map((s) => SkillChip(skill: s)).toList(),
                     ),
-                  ).animate().fadeIn(delay: 80.ms, duration: 400.ms),
+                  ).animate().fadeIn(delay: 120.ms, duration: 400.ms),
+
             const SizedBox(height: 24),
 
             // ── Projects ──────────────────────────────────────────────────
@@ -60,7 +101,7 @@ class CvReviewScreen extends ConsumerWidget {
               icon: Icons.rocket_launch_rounded,
               label: 'Projects Found',
               count: cv.projects.length,
-              color: AppTheme.accentBlue,
+              color: const Color(0xFF60A5FA),
             ),
             const SizedBox(height: 10),
             if (cv.projects.isEmpty)
@@ -76,18 +117,19 @@ class CvReviewScreen extends ConsumerWidget {
                   index: e.key,
                   theme: theme,
                 ).animate().fadeIn(
-                  delay: Duration(milliseconds: 120 + e.key * 80),
+                  delay: Duration(milliseconds: 160 + e.key * 80),
                   duration: 400.ms,
                 ),
               )),
+
             const SizedBox(height: 24),
 
             // ── Experience ────────────────────────────────────────────────
             _SectionLabel(
               icon: Icons.work_rounded,
-              label: 'Experience',
+              label: 'Work Experience',
               count: cv.experience.length,
-              color: const Color(0xFF2DD4BF),
+              color: AppTheme.accentTeal,
             ),
             const SizedBox(height: 10),
             if (cv.experience.isEmpty)
@@ -103,7 +145,7 @@ class CvReviewScreen extends ConsumerWidget {
                   index: e.key,
                   theme: theme,
                 ).animate().fadeIn(
-                  delay: Duration(milliseconds: 160 + e.key * 80),
+                  delay: Duration(milliseconds: 200 + e.key * 80),
                   duration: 400.ms,
                 ),
               )),
@@ -111,70 +153,453 @@ class CvReviewScreen extends ConsumerWidget {
             const SizedBox(height: 32),
 
             // ── Actions ───────────────────────────────────────────────────
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.verified_user_rounded, size: 18),
-                label: const Text('Connect GitHub to Verify'),
-                onPressed: () => context.goNamed('verify-github'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => context.goNamed('dashboard'),
-                child: const Text('Skip for Now'),
-              ),
-            ),
-            const SizedBox(height: 8),
+            _ActionsSection(profiles: cv.profiles)
+                .animate().fadeIn(delay: 300.ms, duration: 400.ms),
+
+            const SizedBox(height: 16),
           ]),
         ),
       ),
     );
   }
+
+  int _countProfiles(ExtractedProfiles p) {
+    int c = 0;
+    if (p.email.isNotEmpty) c++;
+    if (p.phone.isNotEmpty) c++;
+    if (p.github.isNotEmpty) c++;
+    if (p.linkedin.isNotEmpty) c++;
+    if (p.leetcode.isNotEmpty) c++;
+    if (p.geeksforgeeks.isNotEmpty) c++;
+    if (p.portfolio.isNotEmpty) c++;
+    if (p.twitter.isNotEmpty) c++;
+    return c;
+  }
 }
 
-// ── Header Banner ────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Profiles card — shows all detected links with copy buttons
+// ─────────────────────────────────────────────────────────────────────────────
+class _ProfilesCard extends StatelessWidget {
+  final ExtractedProfiles profiles;
+  final bool isDark;
+  const _ProfilesCard({required this.profiles, required this.isDark});
 
-class _HeaderBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final items = <_ProfileItem>[];
+
+    if (profiles.email.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.email_rounded,
+        color: AppTheme.accentGold,
+        label: 'Email',
+        value: profiles.email,
+        url: 'mailto:${profiles.email}',
+      ));
+    }
+    if (profiles.phone.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.phone_rounded,
+        color: AppTheme.accentTeal,
+        label: 'Phone',
+        value: profiles.phone,
+        url: 'tel:${profiles.phone}',
+      ));
+    }
+    if (profiles.github.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.code_rounded,
+        color: const Color(0xFF94A3B8),
+        label: 'GitHub',
+        value: profiles.github,
+        url: 'https://github.com/${profiles.github}',
+        isVerifiable: true,
+        verifyLabel: 'Verify now →',
+      ));
+    }
+    if (profiles.linkedin.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.business_center_rounded,
+        color: const Color(0xFF0A66C2),
+        label: 'LinkedIn',
+        value: profiles.linkedin,
+        url: 'https://linkedin.com/in/${profiles.linkedin}',
+      ));
+    }
+    if (profiles.leetcode.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.terminal_rounded,
+        color: const Color(0xFFF59E0B),
+        label: 'LeetCode',
+        value: profiles.leetcode,
+        url: 'https://leetcode.com/${profiles.leetcode}',
+        isVerifiable: true,
+        verifyLabel: 'Verify (coming soon)',
+      ));
+    }
+    if (profiles.geeksforgeeks.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.laptop_chromebook_rounded,
+        color: const Color(0xFF22C55E),
+        label: 'GeeksForGeeks',
+        value: profiles.geeksforgeeks,
+        url: 'https://geeksforgeeks.org/user/${profiles.geeksforgeeks}',
+      ));
+    }
+    if (profiles.portfolio.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.language_rounded,
+        color: AppTheme.accentBlue,
+        label: 'Portfolio',
+        value: profiles.portfolio,
+        url: profiles.portfolio,
+      ));
+    }
+    if (profiles.twitter.isNotEmpty) {
+      items.add(_ProfileItem(
+        icon: Icons.tag_rounded,
+        color: const Color(0xFF1DA1F2),
+        label: 'Twitter / X',
+        value: '@${profiles.twitter}',
+        url: 'https://x.com/${profiles.twitter}',
+      ));
+    }
+
+    final cardBg = isDark ? AppTheme.bgCard : AppTheme.lBgCard;
+    final border = isDark ? AppTheme.borderColor : AppTheme.lBorderColor;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: border),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.05),
+            blurRadius: 20,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+            child: Row(
+              children: [
+                Icon(Icons.auto_fix_high_rounded,
+                    size: 13, color: AppTheme.accentGold),
+                const SizedBox(width: 6),
+                Text(
+                  'Auto-extracted from your CV — review before continuing',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? AppTheme.textMuted : AppTheme.lTextMuted,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...items.asMap().entries.map((e) => _ProfileRow(
+                item: e.value,
+                isDark: isDark,
+                showDivider: e.key < items.length - 1,
+              )),
+          const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileItem {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String value;
+  final String url;
+  final bool isVerifiable;
+  final String? verifyLabel;
+
+  const _ProfileItem({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+    required this.url,
+    this.isVerifiable = false,
+    this.verifyLabel,
+  });
+}
+
+class _ProfileRow extends StatelessWidget {
+  final _ProfileItem item;
+  final bool isDark;
+  final bool showDivider;
+  const _ProfileRow({
+    required this.item,
+    required this.isDark,
+    required this.showDivider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final border = isDark ? AppTheme.borderColor : AppTheme.lBorderColor;
+    final textMut = isDark ? AppTheme.textMuted : AppTheme.lTextMuted;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: item.color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(item.icon, color: item.color, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: textMut,
+                        fontFamily: 'monospace',
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      item.value,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: item.color,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              // Copy button
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: item.value));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${item.label} copied'),
+                      duration: const Duration(seconds: 1),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.bgElevated : AppTheme.lBgElevated,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: border),
+                  ),
+                  child: Icon(Icons.copy_rounded,
+                      size: 13,
+                      color: isDark
+                          ? AppTheme.textSecondary
+                          : AppTheme.lTextSecondary),
+                ),
+              ),
+              if (item.isVerifiable && item.verifyLabel != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: item.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: item.color.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    item.verifyLabel!,
+                    style: TextStyle(
+                        fontSize: 9,
+                        color: item.color,
+                        fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (showDivider)
+          Divider(height: 1, color: border.withValues(alpha: 0.5)),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Actions section — pre-fills GitHub from extracted profile
+// ─────────────────────────────────────────────────────────────────────────────
+class _ActionsSection extends ConsumerWidget {
+  final ExtractedProfiles profiles;
+  const _ActionsSection({required this.profiles});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+    final hasGitHub = profiles.github.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // GitHub CTA — shows pre-fill hint if username was extracted
+        if (hasGitHub)
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppTheme.accentTeal.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.auto_awesome_rounded,
+                    size: 14, color: AppTheme.accentTeal),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'GitHub username "${profiles.github}" was found in your CV — it\'ll be pre-filled on the next screen.',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.accentTeal,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: AppTheme.accentGold,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => context.goNamed('verify-github'),
+                child: const Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified_user_rounded,
+                          size: 17, color: AppTheme.bgDark),
+                      SizedBox(width: 8),
+                      Text(
+                        'Connect GitHub to Verify',
+                        style: TextStyle(
+                          color: AppTheme.bgDark,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => context.goNamed('dashboard'),
+            child: const Text('Skip for Now — Go to Dashboard'),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            'You can always connect GitHub and verify skills from the dashboard.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? AppTheme.textMuted : AppTheme.lTextMuted,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Success Banner
+// ─────────────────────────────────────────────────────────────────────────────
+class _SuccessBanner extends StatelessWidget {
   final ThemeData theme;
-  const _HeaderBanner({required this.theme});
+  const _SuccessBanner({required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return AuctorCard(
-      glowColor: AppTheme.accentGold,
+      glowColor: AppTheme.accentTeal,
       child: Row(children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: AppTheme.accentGold.withValues(alpha: 0.15),
+            color: AppTheme.accentTeal.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.auto_awesome_rounded,
-              color: AppTheme.accentGold, size: 22),
+          child: const Icon(Icons.check_circle_rounded,
+              color: AppTheme.accentTeal, size: 22),
         ),
         const SizedBox(width: 14),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('AI Extraction Complete',
                 style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.accentGold,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.accentTeal,
                 )),
             const SizedBox(height: 2),
-            Text('Review your data below before connecting profiles.',
-                style: theme.textTheme.bodySmall),
+            Text(
+              'Review everything below — confirm, edit, or add anything before continuing.',
+              style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
+            ),
           ]),
         ),
       ]),
-    ).animate().fadeIn(duration: 400.ms);
+    );
   }
 }
 
-// ── Section Label ─────────────────────────────────────────────────────────────
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Reusable section label
+// ─────────────────────────────────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -194,8 +619,8 @@ class _SectionLabel extends StatelessWidget {
       const SizedBox(width: 8),
       Text(label,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          )),
+                fontWeight: FontWeight.w600,
+              )),
       const SizedBox(width: 8),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -204,14 +629,18 @@ class _SectionLabel extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text('$count',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color)),
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall
+                ?.copyWith(color: color, fontWeight: FontWeight.w700)),
       ),
     ]);
   }
 }
 
-// ── Empty State ───────────────────────────────────────────────────────────────
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Empty State
+// ─────────────────────────────────────────────────────────────────────────────
 class _EmptyState extends StatelessWidget {
   final IconData icon;
   final String message;
@@ -227,7 +656,6 @@ class _EmptyState extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-          style: BorderStyle.solid,
         ),
       ),
       child: Column(children: [
@@ -244,8 +672,9 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ── Project Card ─────────────────────────────────────────────────────────────
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Project Card
+// ─────────────────────────────────────────────────────────────────────────────
 class _ProjectCard extends StatelessWidget {
   final dynamic project;
   final int index;
@@ -259,7 +688,8 @@ class _ProjectCard extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Container(
-            width: 36, height: 36,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: AppTheme.accentBlue.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
@@ -288,7 +718,8 @@ class _ProjectCard extends StatelessWidget {
         if (project.techStack.isNotEmpty) ...[
           const SizedBox(height: 10),
           Wrap(
-            spacing: 6, runSpacing: 4,
+            spacing: 6,
+            runSpacing: 4,
             children: (project.techStack as List<String>)
                 .map((t) => SkillChip(skill: t))
                 .toList(),
@@ -299,8 +730,9 @@ class _ProjectCard extends StatelessWidget {
   }
 }
 
-// ── Experience Card ───────────────────────────────────────────────────────────
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Experience Card
+// ─────────────────────────────────────────────────────────────────────────────
 class _ExperienceCard extends StatelessWidget {
   final dynamic experience;
   final int index;
@@ -313,13 +745,14 @@ class _ExperienceCard extends StatelessWidget {
     return AuctorCard(
       child: Row(children: [
         Container(
-          width: 44, height: 44,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFF2DD4BF).withValues(alpha: 0.10),
+            color: AppTheme.accentTeal.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(Icons.business_rounded,
-              color: Color(0xFF2DD4BF), size: 22),
+              color: AppTheme.accentTeal, size: 22),
         ),
         const SizedBox(width: 12),
         Expanded(

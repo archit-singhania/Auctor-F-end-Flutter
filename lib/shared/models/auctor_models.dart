@@ -1,21 +1,83 @@
 // Shared data models for Auctor
 // All fromJson factories match the FastAPI response schemas exactly.
 
+class ExtractedProfiles {
+  final String email;
+  final String phone;
+  final String github;
+  final String linkedin;
+  final String leetcode;
+  final String geeksforgeeks;
+  final String portfolio;
+  final String twitter;
+
+  const ExtractedProfiles({
+    this.email = '',
+    this.phone = '',
+    this.github = '',
+    this.linkedin = '',
+    this.leetcode = '',
+    this.geeksforgeeks = '',
+    this.portfolio = '',
+    this.twitter = '',
+  });
+
+  factory ExtractedProfiles.empty() => const ExtractedProfiles();
+
+  factory ExtractedProfiles.fromJson(Map<String, dynamic> json) {
+    return ExtractedProfiles(
+      email: json['email'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      github: json['github'] as String? ?? '',
+      linkedin: json['linkedin'] as String? ?? '',
+      leetcode: json['leetcode'] as String? ?? '',
+      geeksforgeeks: json['geeksforgeeks'] as String? ?? '',
+      portfolio: json['portfolio'] as String? ?? '',
+      twitter: json['twitter'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'phone': phone,
+        'github': github,
+        'linkedin': linkedin,
+        'leetcode': leetcode,
+        'geeksforgeeks': geeksforgeeks,
+        'portfolio': portfolio,
+        'twitter': twitter,
+      };
+
+  /// Returns true if at least one profile field is non-empty.
+  bool get hasAny =>
+      email.isNotEmpty ||
+      phone.isNotEmpty ||
+      github.isNotEmpty ||
+      linkedin.isNotEmpty ||
+      leetcode.isNotEmpty ||
+      geeksforgeeks.isNotEmpty ||
+      portfolio.isNotEmpty ||
+      twitter.isNotEmpty;
+}
+
 class ExtractedCvData {
   final List<String> skills;
   final List<Project> projects;
   final List<Experience> experience;
+  final ExtractedProfiles profiles;
 
   const ExtractedCvData({
     required this.skills,
     required this.projects,
     required this.experience,
+    this.profiles = const ExtractedProfiles(),
   });
 
   factory ExtractedCvData.empty() => const ExtractedCvData(
         skills: [],
         projects: [],
         experience: [],
+        profiles: ExtractedProfiles(),
       );
 
   factory ExtractedCvData.fromJson(Map<String, dynamic> json) {
@@ -27,6 +89,9 @@ class ExtractedCvData {
       experience: (json['experience'] as List? ?? [])
           .map((e) => Experience.fromJson(e as Map<String, dynamic>))
           .toList(),
+      profiles: json['profiles'] != null
+          ? ExtractedProfiles.fromJson(json['profiles'] as Map<String, dynamic>)
+          : const ExtractedProfiles(),
     );
   }
 
@@ -34,6 +99,7 @@ class ExtractedCvData {
         'skills': skills,
         'projects': projects.map((p) => p.toJson()).toList(),
         'experience': experience.map((e) => e.toJson()).toList(),
+        'profiles': profiles.toJson(),
       };
 }
 

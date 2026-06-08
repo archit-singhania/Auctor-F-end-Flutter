@@ -8,28 +8,36 @@ import 'core/theme/theme_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/constants/app_constants.dart';
 
-/// Pings the Railway backend silently on app start.
-/// This warms up the container so it’s ready when the user hits upload.
+/// Aggressively warms up the Railway backend.
+/// Railway free tier cold-starts take 5-10 s. We fire 4 pings:
+///   0 s  — immediate, wakes the container
+///   2 s  — DB pool may still be initialising
+///   5 s  — covers slow cold-starts
+///  10 s  — final safety net
 void _warmUpBackend() {
-  Future.delayed(const Duration(milliseconds: 500), () async {
-    try {
-      await http
-          .get(Uri.parse('${AppConstants.apiBaseUrl}/ping'))
-          .timeout(const Duration(seconds: 10));
-    } catch (_) {
-      // Ignore — this is best-effort warm-up only
-    }
-  });
+  _doPing();
+  Future.delayed(const Duration(seconds: 2), _doPing);
+  Future.delayed(const Duration(seconds: 5), _doPing);
+  Future.delayed(const Duration(seconds: 10), _doPing);
+}
+
+Future<void> _doPing() async {
+  try {
+    await http
+        .get(Uri.parse('${AppConstants.apiBaseUrl}/ping'))
+        .timeout(const Duration(seconds: 12));
+  } catch (_) {
+    // Silent — best-effort warm-up only
+  }
 }
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Use hash routing on web so Vercel always serves index.html
-  // regardless of which route is in the URL (/#/cv-upload, /#/dashboard, etc.)
+  // Hash routing on web so Vercel always serves index.html for any deep-link
   configureUrlStrategy();
-  // Warm up the Railway backend immediately so it's ready when the user hits upload
+  // Start warming up the backend ASAP — before any UI is shown
   _warmUpBackend();
-  // Only lock orientation on mobile — web ignores this
+  // Lock portrait on mobile only
   if (!kIsWeb) {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -48,7 +56,6 @@ class AuctorApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final isDark    = themeMode == ThemeMode.dark;
 
-    // Update system UI chrome to match current theme
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor:                Colors.transparent,
       statusBarIconBrightness:       isDark ? Brightness.light : Brightness.dark,

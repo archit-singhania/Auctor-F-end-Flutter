@@ -223,6 +223,16 @@ class AuctorApiService {
           duration: 'Jun 2023 – Dec 2023',
         ),
       ],
+      profiles: const ExtractedProfiles(
+        email: 'dev@example.com',
+        phone: '+91 98765 43210',
+        github: 'devexample',
+        linkedin: 'dev-example',
+        leetcode: 'devexample',
+        geeksforgeeks: '',
+        portfolio: 'https://devexample.dev',
+        twitter: '',
+      ),
     );
   }
 

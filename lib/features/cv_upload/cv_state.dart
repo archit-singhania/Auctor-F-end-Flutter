@@ -31,6 +31,7 @@ class CvDataNotifier extends StateNotifier<ExtractedCvData> {
       skills: state.skills,
       projects: updatedProjects,
       experience: state.experience,
+      profiles: state.profiles, // preserve extracted profiles
     );
   }
 }

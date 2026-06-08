@@ -22,12 +22,21 @@ class _GithubVerifyScreenState extends ConsumerState<GithubVerifyScreen> {
   GitHubVerifyResult? _result;
   String? _errorMessage;
   bool _isFocused = false;
+  bool _preFilledFromCv = false;
 
   @override
   void initState() {
     super.initState();
     _focusNode.addListener(() {
       setState(() => _isFocused = _focusNode.hasFocus);
+    });
+    // Pre-fill GitHub username if extracted from CV
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cvData = ref.read(cvDataProvider);
+      if (cvData.profiles.github.isNotEmpty) {
+        _usernameController.text = cvData.profiles.github;
+        setState(() => _preFilledFromCv = true);
+      }
     });
   }
 
@@ -92,6 +101,36 @@ class _GithubVerifyScreenState extends ConsumerState<GithubVerifyScreen> {
                   .fadeIn(duration: 400.ms),
 
               const SizedBox(height: 28),
+
+              // ── Pre-fill hint ──────────────────────────────────────
+              if (_preFilledFromCv)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentTeal.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: AppTheme.accentTeal.withValues(alpha: 0.2)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.auto_awesome_rounded,
+                          size: 13, color: AppTheme.accentTeal),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Username auto-filled from your CV — verify or edit it below.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.accentTeal,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ).animate().fadeIn(delay: 60.ms, duration: 300.ms),
 
               // ── Input section ──────────────────────────────────────
               Text(
@@ -211,13 +250,10 @@ class _PlatformHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = isDark ? AppTheme.bgCard : AppTheme.lBgCard;
-    final border = isDark ? AppTheme.borderColor : AppTheme.lBorderColor;
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: isDark ? AppTheme.bgCard : AppTheme.lBgCard,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppTheme.accentBlue.withValues(alpha: 0.3)),
         boxShadow: [
@@ -260,8 +296,7 @@ class _PlatformHeader extends StatelessWidget {
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: AppTheme.accentBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
@@ -447,7 +482,6 @@ class _GithubErrorBanner extends StatelessWidget {
   final String message;
   const _GithubErrorBanner({required this.message});
 
-  // Detect token-related errors and show a helpful fix hint.
   bool get _isTokenError =>
       message.toLowerCase().contains('401') ||
       message.toLowerCase().contains('token') ||
@@ -628,7 +662,6 @@ class _ResultCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Stats row
           Row(
             children: [
               _StatBubble(
@@ -654,7 +687,10 @@ class _ResultCard extends StatelessWidget {
             ],
           ),
 
-          if (result.matchedProjects.isNotEmpty) ...[const SizedBox(height: 16), const Divider(), const SizedBox(height: 12),
+          if (result.matchedProjects.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 12),
             Text(
               'Projects matched from your CV',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -690,7 +726,6 @@ class _StatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -782,9 +817,7 @@ class _GoldButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   const _GoldButton(
-      {required this.label,
-      required this.icon,
-      required this.onPressed});
+      {required this.label, required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -820,8 +853,7 @@ class _GoldButton extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_rounded,
-                    color: AppTheme.bgDark, size: 18),
+                Icon(icon, color: AppTheme.bgDark, size: 18),
               ],
             ),
           ),

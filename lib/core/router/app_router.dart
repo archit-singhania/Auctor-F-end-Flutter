@@ -22,9 +22,10 @@ void configureUrlStrategy() {
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    // Start with splash → auto-navigates to home after 2.8s
-    initialLocation: '/splash',
-    debugLogDiagnostics: true,
+    // On web: skip splash and go straight to home (no cold-start delay shown to user).
+    // On mobile: show the branded splash screen.
+    initialLocation: kIsWeb ? '/home' : '/splash',
+    debugLogDiagnostics: false, // turn off in production to reduce console noise
     routes: [
       GoRoute(
         path: '/splash',
