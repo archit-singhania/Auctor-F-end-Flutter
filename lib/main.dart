@@ -8,24 +8,27 @@ import 'core/theme/theme_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/constants/app_constants.dart';
 
-/// Aggressively warms up the Railway backend.
-/// Railway free tier cold-starts take 5-10 s. We fire 4 pings:
-///   0 s  — immediate, wakes the container
-///   2 s  — DB pool may still be initialising
-///   5 s  — covers slow cold-starts
-///  10 s  — final safety net
+/// Aggressively warms up the Railway backend before any UI interaction.
+/// Railway free tier cold-starts take 5–15 s on first wake.
+/// Strategy: fire 5 staggered pings covering the full cold-start window.
+///   0 s  — immediate kick  (wakes the container)
+///   1 s  — DB pool init typically takes ~1 s
+///   3 s  — most cold-starts done by now
+///   6 s  — covers slow cold-starts
+///  12 s  — final safety net
 void _warmUpBackend() {
   _doPing();
-  Future.delayed(const Duration(seconds: 2), _doPing);
-  Future.delayed(const Duration(seconds: 5), _doPing);
-  Future.delayed(const Duration(seconds: 10), _doPing);
+  Future.delayed(const Duration(seconds: 1), _doPing);
+  Future.delayed(const Duration(seconds: 3), _doPing);
+  Future.delayed(const Duration(seconds: 6), _doPing);
+  Future.delayed(const Duration(seconds: 12), _doPing);
 }
 
 Future<void> _doPing() async {
   try {
     await http
         .get(Uri.parse('${AppConstants.apiBaseUrl}/ping'))
-        .timeout(const Duration(seconds: 12));
+        .timeout(const Duration(seconds: 14));
   } catch (_) {
     // Silent — best-effort warm-up only
   }
@@ -33,10 +36,14 @@ Future<void> _doPing() async {
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
   // Hash routing on web so Vercel always serves index.html for any deep-link
   configureUrlStrategy();
-  // Start warming up the backend ASAP — before any UI is shown
+
+  // Start warming up the backend ASAP — before any UI is shown.
+  // On web this fires immediately after the JS bundle executes.
   _warmUpBackend();
+
   // Lock portrait on mobile only
   if (!kIsWeb) {
     SystemChrome.setPreferredOrientations([
@@ -44,6 +51,7 @@ void main() {
       DeviceOrientation.portraitDown,
     ]);
   }
+
   runApp(const ProviderScope(child: AuctorApp()));
 }
 

@@ -22,10 +22,12 @@ void configureUrlStrategy() {
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    // On web: skip splash and go straight to home (no cold-start delay shown to user).
-    // On mobile: show the branded splash screen.
+    // On web: skip splash entirely — go straight to home so there's zero
+    // Flutter-side delay after the JS bundle loads. The HTML loader already
+    // handles the loading indicator before Flutter paints its first frame.
+    // On mobile: show the branded splash screen (500 ms delay).
     initialLocation: kIsWeb ? '/home' : '/splash',
-    debugLogDiagnostics: false, // turn off in production to reduce console noise
+    debugLogDiagnostics: false,
     routes: [
       GoRoute(
         path: '/splash',

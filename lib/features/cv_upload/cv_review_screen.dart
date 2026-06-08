@@ -215,7 +215,8 @@ class _ProfilesCard extends StatelessWidget {
         value: profiles.github,
         url: 'https://github.com/${profiles.github}',
         isVerifiable: true,
-        verifyLabel: 'Verify now →',
+        verifyLabel: 'Auto-verified ✓',
+        verifyColor: AppTheme.accentTeal,
       ));
     }
     if (profiles.linkedin.isNotEmpty) {
@@ -236,6 +237,7 @@ class _ProfilesCard extends StatelessWidget {
         url: 'https://leetcode.com/${profiles.leetcode}',
         isVerifiable: true,
         verifyLabel: 'Verify (coming soon)',
+        verifyColor: const Color(0xFFF59E0B),
       ));
     }
     if (profiles.geeksforgeeks.isNotEmpty) {
@@ -323,6 +325,7 @@ class _ProfileItem {
   final String url;
   final bool isVerifiable;
   final String? verifyLabel;
+  final Color? verifyColor;
 
   const _ProfileItem({
     required this.icon,
@@ -332,6 +335,7 @@ class _ProfileItem {
     required this.url,
     this.isVerifiable = false,
     this.verifyLabel,
+    this.verifyColor,
   });
 }
 
@@ -349,6 +353,7 @@ class _ProfileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final border = isDark ? AppTheme.borderColor : AppTheme.lBorderColor;
     final textMut = isDark ? AppTheme.textMuted : AppTheme.lTextMuted;
+    final badgeColor = item.verifyColor ?? item.color;
 
     return Column(
       children: [
@@ -423,15 +428,15 @@ class _ProfileRow extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: item.color.withValues(alpha: 0.1),
+                    color: badgeColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: item.color.withValues(alpha: 0.3)),
+                    border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     item.verifyLabel!,
                     style: TextStyle(
                         fontSize: 9,
-                        color: item.color,
+                        color: badgeColor,
                         fontWeight: FontWeight.w700),
                   ),
                 ),
@@ -447,7 +452,7 @@ class _ProfileRow extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Actions section — pre-fills GitHub from extracted profile
+// Actions section — everything auto-extracted; go straight to dashboard
 // ─────────────────────────────────────────────────────────────────────────────
 class _ActionsSection extends ConsumerWidget {
   final ExtractedProfiles profiles;
@@ -456,39 +461,56 @@ class _ActionsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
-    final hasGitHub = profiles.github.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // GitHub CTA — shows pre-fill hint if username was extracted
-        if (hasGitHub)
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppTheme.accentTeal.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.auto_awesome_rounded,
-                    size: 14, color: AppTheme.accentTeal),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'GitHub username "${profiles.github}" was found in your CV — it\'ll be pre-filled on the next screen.',
-                    style: const TextStyle(
-                      fontSize: 12,
+        // Summary chip showing what was auto-wired
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.accentTeal.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppTheme.accentTeal.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.check_circle_rounded,
+                      size: 14, color: AppTheme.accentTeal),
+                  SizedBox(width: 8),
+                  Text(
+                    'Everything extracted automatically',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.accentTeal,
-                      height: 1.4,
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your GitHub${profiles.github.isNotEmpty ? ' (@${profiles.github})' : ''}, '
+                'LinkedIn${profiles.linkedin.isNotEmpty ? ' (${profiles.linkedin})' : ''}, '
+                'LeetCode, and contact info are all pre-filled from your CV. '
+                'Continue to the dashboard to see your verification steps.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppTheme.textSecondary : AppTheme.lTextSecondary,
+                  height: 1.5,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
+
+        const SizedBox(height: 14),
+
+        // Primary CTA — go to dashboard
         SizedBox(
           width: double.infinity,
           height: 52,
@@ -508,16 +530,16 @@ class _ActionsSection extends ConsumerWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () => context.goNamed('verify-github'),
+                onTap: () => context.goNamed('dashboard'),
                 child: const Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.verified_user_rounded,
+                      Icon(Icons.dashboard_rounded,
                           size: 17, color: AppTheme.bgDark),
                       SizedBox(width: 8),
                       Text(
-                        'Connect GitHub to Verify',
+                        'Continue to Dashboard',
                         style: TextStyle(
                           color: AppTheme.bgDark,
                           fontWeight: FontWeight.w800,
@@ -531,18 +553,11 @@ class _ActionsSection extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => context.goNamed('dashboard'),
-            child: const Text('Skip for Now — Go to Dashboard'),
-          ),
-        ),
+
         const SizedBox(height: 8),
         Center(
           child: Text(
-            'You can always connect GitHub and verify skills from the dashboard.',
+            'You can verify GitHub and badges from the dashboard.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
