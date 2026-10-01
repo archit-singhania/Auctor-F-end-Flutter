@@ -6,6 +6,7 @@
 ///
 /// Screens read:  ref.watch(scoreProvider)
 /// Screens write: ref.read(scoreProvider.notifier).refresh()
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/auctor_api_service.dart';

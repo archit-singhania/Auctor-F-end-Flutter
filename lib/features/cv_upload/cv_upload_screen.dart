@@ -214,10 +214,10 @@ class _CvUploadScreenState extends ConsumerState<CvUploadScreen>
 
               const SizedBox(height: 16),
 
-              Wrap(
+              const Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: const [
+                children: [
                   _FeatureTag(
                       icon: Icons.bolt_rounded, label: '~10 sec analysis'),
                   _FeatureTag(

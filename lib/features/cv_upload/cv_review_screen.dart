@@ -83,7 +83,7 @@ class CvReviewScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             cv.skills.isEmpty
-                ? _EmptyState(
+                ? const _EmptyState(
                     icon: Icons.build_outlined,
                     message: 'No skills detected. Your CV may be image-only or unsupported.',
                   )
@@ -105,7 +105,7 @@ class CvReviewScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             if (cv.projects.isEmpty)
-              _EmptyState(
+              const _EmptyState(
                 icon: Icons.folder_open_outlined,
                 message: 'No projects detected. Make sure your CV has a clearly labelled "Projects" section.',
               )
@@ -133,7 +133,7 @@ class CvReviewScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             if (cv.experience.isEmpty)
-              _EmptyState(
+              const _EmptyState(
                 icon: Icons.work_outline_rounded,
                 message: 'No experience detected. Make sure your CV has an "Experience" or "Work" section.',
               )
@@ -290,7 +290,7 @@ class _ProfilesCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
             child: Row(
               children: [
-                Icon(Icons.auto_fix_high_rounded,
+                const Icon(Icons.auto_fix_high_rounded,
                     size: 13, color: AppTheme.accentGold),
                 const SizedBox(width: 6),
                 Text(

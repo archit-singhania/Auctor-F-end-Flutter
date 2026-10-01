@@ -16,7 +16,7 @@ import '../../features/profile/profile_screen.dart';
 // Call this once before runApp to enable hash routing on web
 void configureUrlStrategy() {
   if (kIsWeb) {
-    setUrlStrategy(HashUrlStrategy());
+    setUrlStrategy(const HashUrlStrategy());
   }
 }
 

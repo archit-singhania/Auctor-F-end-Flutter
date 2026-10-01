@@ -20,8 +20,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
     // On web: skip splash immediately — no one wants to wait.
     // On mobile: brief 800ms brand moment (was 1200ms, shaved 400ms).
-    final delay = kIsWeb ? 0 : 500;
-    Future.delayed(Duration(milliseconds: delay), () {
+    const delay = kIsWeb ? 0 : 500;
+    Future.delayed(const Duration(milliseconds: delay), () {
       if (mounted) context.goNamed('home');
     });
   }
@@ -36,8 +36,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final isDark   = ref.watch(themeModeProvider) == ThemeMode.dark;
     final bg       = isDark ? AppTheme.bgDark : AppTheme.lBg;
     final textPrim = isDark ? AppTheme.textPrimary : AppTheme.lTextPrimary;
-    final gold     = AppTheme.accentGold;
-    final goldDim  = AppTheme.accentGoldDim;
+    const gold     = AppTheme.accentGold;
+    const goldDim  = AppTheme.accentGoldDim;
 
     return Scaffold(
       backgroundColor: bg,
@@ -63,7 +63,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AuctorLogo(size: 80)
+                const AuctorLogo(size: 80)
                     .animate()
                     .scale(duration: 280.ms, curve: Curves.easeOutBack)
                     .fadeIn(duration: 200.ms),
@@ -85,7 +85,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                 const SizedBox(height: 8),
 
-                Text(
+                const Text(
                   'Developer Trust Score',
                   style: TextStyle(
                     fontSize: 13,
@@ -105,7 +105,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       width: 6,
                       height: 6,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: goldDim,
                         shape: BoxShape.circle,
                       ),

@@ -1,18 +1,33 @@
-# auctor_app
+# Auctor · Proof of your craft
 
-A new Flutter project.
+A responsive Flutter evidence workspace with an original provenance identity, pearl/graphite themes, champagne accents and restrained glass navigation. A desktop rail becomes a mobile dock. Reduced-motion and opaque-surface preferences follow the authenticated account.
 
-## Getting Started
+## Run
 
-This project is a starting point for a Flutter application.
+Use Flutter stable and the companion FastAPI v2 API. `flutter pub get`, then `flutter run -d chrome --web-port 8080 --dart-define=API_BASE_URL=http://localhost:8000`. The API must explicitly allow `http://localhost:8080`. Web secure session storage requires HTTPS or localhost. For Android emulator use the host alias `http://10.0.2.2:8000` in a debug network configuration; release manifests require HTTPS. For mobile/public sharing pass `--dart-define=WEB_BASE_URL=https://your-web-domain`.
 
-A few resources to get you started if this is your first Flutter project:
+`flutter build web --release --dart-define=API_BASE_URL=https://your-api-domain --dart-define=WEB_BASE_URL=https://your-web-domain` creates a reviewable production bundle. Do not deploy the localhost default. Vercel configuration revalidates stable Flutter filenames instead of caching old bundles forever. GitHub OAuth callback is configured in the API and returns to the current `WEB_URL` workspace route.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Working journeys
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# Auctor-F-end-Flutter
+- Create/sign into an owned private workspace; sessions persist in platform secure storage.
+- Upload a text PDF; follow durable extraction states, cancel/retry, review extracted claims, edit skills/projects/experience/profile links, inspect revision comparisons and restore versions.
+- Confirm GitHub ownership by OAuth, inspect public repository snapshots, then bind an owned repository to a CV project.
+- Complete five timed server-graded skill tracks; see actual score changes and assessment history.
+- Submit experience, certificate or coding-profile evidence; attach private proof PDFs. Authorized independent reviewers inspect sources and record decisions.
+- Inspect explainable weighted score, skill roadmap, notifications and score evolution.
+- Search opt-in candidates, filter by score, save candidates and compare up to three profiles.
+- Edit your public identity; enable discovery, preview public evidence, copy share links, show QR, create/revoke private sharing links, download PDF/JSON reports and copy an embeddable score badge.
+
+The app exposes honest pending/unconfigured states. Extracted profile URLs do not prove ownership; imported coding counts require independent review. Private contact information and source PDFs are omitted from public profiles. Native desktop downloads write the selected file; mobile/web platform pickers save the supplied bytes.
+
+## Source
+
+`lib/main.dart` mounts `lib/premium/app.dart`; `lib/premium/controller.dart` owns authentication/network/persistence state. The previous `lib/core`, `lib/features` and `lib/shared` implementation remains as migration reference and is not mounted. `assets/brand/auctor-mark.svg` is the original mark; `export_brand.py` reproducibly exports matching platform icons. Flutter uses platform typography without a font network request.
+
+## Verification and limitations
+
+Run `flutter analyze`, `flutter test` and `flutter build web --release`. Tests cover bearer ownership/error handling, real responsive landing/workspace/evidence/profile layouts at 390 and 1440px and overflow detection. Android debug APK was built locally with JDK 21; CI also builds Android. Native device execution remains unverified. Windows native plugin builds require Windows Developer Mode/symlink support; iOS signing/build verification requires macOS/Xcode and operator certificates. These environment requirements are distinct from the verified web build.
+
+Backend tests use isolated local PostgreSQL and mocked provider boundaries; live GitHub OAuth/OpenAI credentials, deployment HTTPS/storage/backups and account-owner credential rotation remain operator setup.
+

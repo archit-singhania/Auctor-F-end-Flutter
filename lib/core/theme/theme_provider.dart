@@ -3,6 +3,7 @@
 /// Tracks whether the app is in dark or light mode.
 /// Screens use:  ref.watch(themeModeProvider)  to read
 ///               ref.read(themeModeProvider.notifier).toggle()  to switch
+library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 

@@ -9,7 +9,6 @@ import '../../core/theme/theme_toggle_button.dart';
 import '../../shared/providers/providers.dart';
 import '../../shared/widgets/auctor_widgets.dart';
 import '../../shared/widgets/auctor_logo.dart';
-import '../cv_upload/cv_state.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});

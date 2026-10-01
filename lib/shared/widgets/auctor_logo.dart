@@ -7,6 +7,7 @@
 ///   AuctorLogo(size: 32)           // small — AppBar / nav row
 ///   AuctorLogo(size: 80)           // large — splash screen
 ///   AuctorLogo.mark(size: 28)      // just the square icon, no text
+library;
 import 'package:flutter/material.dart';
 
 class AuctorLogo extends StatelessWidget {

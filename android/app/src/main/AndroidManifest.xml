@@ -9,12 +9,12 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
     <application
-        android:label="auctor_app"
+        android:label="Auctor"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
         <!--
-          android:usesCleartextTraffic="true" allows HTTP to localhost/emulator
+          android:usesCleartextTraffic="false" allows HTTP to localhost/emulator
           during development. REMOVE THIS in production and use HTTPS only.
         -->
         <activity
@@ -46,3 +46,4 @@
         </intent>
     </queries>
 </manifest>
+

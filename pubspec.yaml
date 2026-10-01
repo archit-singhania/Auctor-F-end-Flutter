@@ -10,6 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_web_plugins:
+    sdk: flutter
+
   # Navigation
   go_router: ^13.0.0
 
@@ -19,6 +22,9 @@ dependencies:
   # HTTP client
   http: ^1.2.1
   http_parser: ^4.0.2
+  flutter_secure_storage: ^9.2.4
+  url_launcher: ^6.3.1
+  qr_flutter: ^4.1.0
 
   # File Picking
   file_picker: ^8.0.3
@@ -41,4 +47,6 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/logo.png
-    - assets/icons/
+    - assets/brand/
+
+

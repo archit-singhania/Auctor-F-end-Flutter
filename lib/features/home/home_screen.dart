@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,9 +21,9 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: bg,
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
-          children: const [
+          children: [
             _HeroSection(),
             _SocialProofBar(),
             _ProblemSection(),
@@ -737,7 +736,7 @@ class _ProblemSection extends StatelessWidget {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-            Text('Auctor fixes this.',
+            const Text('Auctor fixes this.',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -1169,8 +1168,6 @@ class _WhoItIsForSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textPrim = Theme.of(context).colorScheme.onSurface;
-    final textSec = Theme.of(context).textTheme.bodyMedium?.color ??
-        AppTheme.textSecondary;
 
     const personas = [
       (
