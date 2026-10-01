@@ -1096,10 +1096,13 @@ class EvidencePane extends ConsumerWidget {
                   context: context,
                   builder: (_) => CvEditor(
                       data: c.cv,
-                      onSave: (data) => c.mutate('/cv', method: 'PUT', data: {
-                            'data': data,
-                            'note': 'CV reviewed and edited'
-                          }))),
+                      onSave: (data) async {
+                        await c.mutate('/cv', method: 'PUT', data: {
+                          'data': data,
+                          'note': 'CV reviewed and edited'
+                        });
+                        if (c.error != null) throw StateError(c.error!);
+                      })),
               icon: const Icon(Icons.edit_outlined, size: 18),
               label: const Text('Review & edit'))
         ]),
@@ -1319,6 +1322,7 @@ class _CvEditorState extends State<CvEditor> {
   late Map<String, dynamic> data;
   late TextEditingController skills;
   bool saving = false;
+  String? saveError;
   @override
   void initState() {
     super.initState();
@@ -1343,6 +1347,12 @@ class _CvEditorState extends State<CvEditor> {
                       children: [
                     const Text(
                         'Edit extracted claims before connecting evidence. Verification is recorded separately.'),
+                    if (saveError != null)
+                      Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(saveError!,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error))),
                     const SizedBox(height: 18),
                     TextField(
                         controller: skills,
@@ -1460,9 +1470,21 @@ class _CvEditorState extends State<CvEditor> {
                                   'Name every project and employer before saving')));
                           return;
                         }
-                        setState(() => saving = true);
-                        await widget.onSave(data);
-                        if (context.mounted) Navigator.pop(context);
+                        setState(() {
+                          saving = true;
+                          saveError = null;
+                        });
+                        try {
+                          await widget.onSave(data);
+                          if (context.mounted) Navigator.pop(context);
+                        } catch (e) {
+                          if (mounted) {
+                            setState(() {
+                              saving = false;
+                              saveError = e.toString();
+                            });
+                          }
+                        }
                       },
                 child: Text(saving ? 'Saving…' : 'Save reviewed CV'))
           ]);
@@ -2188,6 +2210,7 @@ class _DiscoverState extends ConsumerState<DiscoverPane> {
         setState(() {
           people =
               (data as List).map((e) => Map<String, dynamic>.from(e)).toList();
+          selected.retainAll(people.map((p) => p['profile']['id'] as int));
           error = null;
         });
       }

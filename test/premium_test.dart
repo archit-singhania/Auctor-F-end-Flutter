@@ -79,6 +79,32 @@ class FixtureController extends WorkspaceController {
 }
 
 void main() {
+  testWidgets('CV save failure preserves the reviewed draft for retry',
+      (tester) async {
+    Map<String, dynamic>? submitted;
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: CvEditor(
+                data: const {
+          'skills': ['Docker'],
+          'projects': [],
+          'experience': [],
+          'profiles': {}
+        },
+                onSave: (data) async {
+                  submitted = data;
+                  throw ApiFailure('Server unavailable', 503);
+                }))));
+    await tester.enterText(find.byType(TextField).first, 'Docker, Redis');
+    await tester.tap(find.text('Save reviewed CV'));
+    await tester.pumpAndSettle();
+    expect(submitted?['skills'], ['Docker', 'Redis']);
+    expect(find.text('Review your story'), findsOneWidget);
+    expect(find.text('Server unavailable'), findsOneWidget);
+    expect(find.text('Docker, Redis'), findsOneWidget);
+    expect(find.text('Save reviewed CV'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   test('API forwards bearer authentication and interprets safe failure details',
       () async {
     final api = PlatformApi(client: MockClient((req) async {

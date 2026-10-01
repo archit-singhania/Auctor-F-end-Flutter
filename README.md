@@ -31,3 +31,5 @@ Run `flutter analyze`, `flutter test` and `flutter build web --release`. Tests c
 
 Backend tests use isolated local PostgreSQL and mocked provider boundaries; live GitHub OAuth/OpenAI credentials, deployment HTTPS/storage/backups and account-owner credential rotation remain operator setup.
 
+See [the 20-capability acceptance record and actual browser screenshots](docs/PORTFOLIO.md). Local Chrome QA also exercises real sign-in, CV saves, server assessment grading, share revocation and session restoration. `scripts/browser-qa.cjs` uses isolated Chrome and creates labelled QA accounts; configure its local API/web URLs and Playwright path before running it against a local instance.
+

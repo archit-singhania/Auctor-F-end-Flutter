@@ -5,9 +5,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/production-config.test.cjs
+      - run: bash -n scripts/vercel-install.sh scripts/vercel-build.sh
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.47.3'
           cache: true
       - run: flutter pub get
       - run: flutter analyze
@@ -20,10 +26,11 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.47.3'
           cache: true
       - run: flutter pub get
       - run: flutter build apk --debug --dart-define=API_BASE_URL=https://example.invalid
