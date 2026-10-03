@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -79,6 +80,87 @@ class FixtureController extends WorkspaceController {
 }
 
 void main() {
+  testWidgets(
+      'Skill source connection opens scoped badge details and keeps unsupported claims unverified',
+      (tester) async {
+    final controller = WorkspaceController(
+        api: PlatformApi(client: MockClient((request) async {
+      expect(request.url.path, '/api/challenges/docker');
+      return http.Response(
+          jsonEncode({
+            'name': 'Containers & delivery',
+            'skill': 'Docker',
+            'earned': true,
+            'questions': 5,
+            'pass_threshold': 3,
+            'duration_seconds': 300,
+            'scope': 'Passed five questions; not comprehensive competency.',
+            'attempts': [
+              {
+                'started_at': '2026-10-01T00:00:00Z',
+                'submitted_at': '2026-10-01T00:01:00Z',
+                'expires_at': '2026-10-01T00:05:00Z',
+                'correct_count': 5,
+                'passed': true,
+                'score_delta': .6
+              }
+            ]
+          }),
+          200);
+    })));
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          workspaceProvider.overrideWith((ref) => FixtureController())
+        ],
+        child: MaterialApp(
+            home: Scaffold(
+                body: SingleChildScrollView(
+                    child: EvidenceSkillsGraph(
+                        controller: controller,
+                        nodes: const [
+              {
+                'id': 'skill:docker',
+                'name': 'Docker',
+                'status': 'assessed',
+                'sources': [
+                  {
+                    'id': 'badge:docker',
+                    'label': 'Containers & delivery',
+                    'kind': 'assessment',
+                    'status': 'assessed',
+                    'badge_id': 'docker',
+                    'scope': 'Passed five questions only.'
+                  }
+                ]
+              },
+              {
+                'id': 'skill:unknown',
+                'name': 'Unknown Tool',
+                'status': 'claimed',
+                'sources': [
+                  {
+                    'id': 'cv',
+                    'label': 'Current CV declaration',
+                    'kind': 'cv',
+                    'status': 'unverified'
+                  }
+                ]
+              },
+            ]))))));
+    await tester.tap(find.text('Inspect source connection'));
+    await tester.pumpAndSettle();
+    expect(find.text('Badge earned'), findsOneWidget);
+    expect(find.text('Passed five questions; not comprehensive competency.'),
+        findsOneWidget);
+    expect(find.textContaining('actual delta +0.6'), findsOneWidget);
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Unknown Tool'));
+    await tester.pumpAndSettle();
+    expect(find.text('Unknown Tool · claimed'), findsOneWidget);
+    expect(find.text('unverified'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('CV save failure preserves the reviewed draft for retry',
       (tester) async {
     Map<String, dynamic>? submitted;

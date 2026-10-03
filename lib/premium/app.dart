@@ -807,10 +807,12 @@ class OverviewPane extends ConsumerWidget {
     final c = ref.watch(workspaceProvider);
     final score = (c.score['total'] as num).toDouble();
     final components = Map<String, dynamic>.from(c.score['components']);
-    final passed = c
-        .list('badges')
-        .where((b) => b['passed'] == true)
-        .map((b) => b['badge_id'])
+    final passed = (c.workspace?['earned_badges'] as List? ??
+            c
+                .list('badges')
+                .where((b) => b['passed'] == true)
+                .map((b) => b['badge_id'])
+                .toList())
         .toSet();
     final github =
         Map<String, dynamic>.from(c.profile['github_identity'] ?? {});
@@ -918,31 +920,14 @@ class OverviewPane extends ConsumerWidget {
       const SizedBox(height: 28),
       const SectionTitle('Skill roadmap',
           subtitle:
-              'Skills from your latest CV, paired with available assessments.'),
-      Surface(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        if ((c.cv['skills'] as List).isEmpty)
-          const Text('Add a CV to see your personal roadmap.'),
-        for (final skill in (c.cv['skills'] as List))
-          Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(children: [
-                Icon(
-                    passed.any((b) => skill
-                            .toString()
-                            .toLowerCase()
-                            .contains(b.toString().split('-')[0]))
-                        ? Icons.check_circle_outline
-                        : Icons.radio_button_unchecked,
-                    size: 18,
-                    color: champagne),
-                const SizedBox(width: 12),
-                Expanded(child: Text(skill.toString())),
-                TextButton(
-                    onPressed: () => c.select(2), child: const Text('Assess'))
-              ]))
-      ])),
+              'Prioritized gaps from your CV, project sources and earned assessments.'),
+      SkillRoadmapPane(controller: c),
+      const SizedBox(height: 28),
+      const SectionTitle('Skills and their evidence',
+          subtitle: 'Select a skill to inspect its actual source connections.'),
+      EvidenceSkillsGraph(
+          controller: c,
+          nodes: insightItems(c, 'skill_graph', nested: 'nodes')),
       const SizedBox(height: 28),
       SectionTitle('Repository intelligence',
           subtitle: github.isEmpty
@@ -975,6 +960,7 @@ class OverviewPane extends ConsumerWidget {
         Text(github.isEmpty
             ? 'OAuth proves you control the account. An extracted URL or a public username does not.'
             : '${repos.length} public owned repositories • ${repos.fold<int>(0, (sum, r) => sum + (r['stars'] as num).toInt())} stars'),
+        if (github.isNotEmpty) RepositoryFreshness(controller: c),
         if (github['recent_activity'] != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -999,6 +985,266 @@ class OverviewPane extends ConsumerWidget {
         ]
       ]))
     ]);
+  }
+}
+
+List<Map<String, dynamic>> insightItems(WorkspaceController c, String key,
+    {String? nested}) {
+  dynamic value = c.workspace?['insights']?[key];
+  if (nested != null) value = value?[nested];
+  return (value as List? ?? [])
+      .map((v) => Map<String, dynamic>.from(v))
+      .toList();
+}
+
+Future<void> showBadgeDetails(
+        BuildContext context, WorkspaceController c, String id) =>
+    showDialog<void>(
+        context: context,
+        builder: (_) => BadgeDetailsDialog(api: c.api, id: id));
+
+class BadgeDetailsDialog extends StatefulWidget {
+  final PlatformApi api;
+  final String id;
+  const BadgeDetailsDialog({super.key, required this.api, required this.id});
+  @override
+  State<BadgeDetailsDialog> createState() => _BadgeDetailsState();
+}
+
+class _BadgeDetailsState extends State<BadgeDetailsDialog> {
+  late Future<dynamic> detail;
+  @override
+  void initState() {
+    super.initState();
+    detail = widget.api.call('/challenges/${widget.id}');
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+          title: const Text('Badge details'),
+          content: SizedBox(
+              width: 620,
+              child: FutureBuilder<dynamic>(
+                  future: detail,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Column(mainAxisSize: MainAxisSize.min, children: [
+                        ErrorNotice(snapshot.error.toString()),
+                        TextButton(
+                            onPressed: () => setState(() => detail =
+                                widget.api.call('/challenges/${widget.id}')),
+                            child: const Text('Retry'))
+                      ]);
+                    }
+                    if (!snapshot.hasData) {
+                      return const SizedBox(
+                          height: 100,
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+                    final data = snapshot.data;
+                    final attempts = data['attempts'] as List;
+                    return SingleChildScrollView(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(data['name'],
+                              style: const TextStyle(
+                                  fontSize: 24, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 12),
+                          Chip(
+                              label: Text(data['earned']
+                                  ? 'Badge earned'
+                                  : 'Not yet earned')),
+                          Text(
+                              '${data['skill']} · ${data['questions']} questions · pass ${data['pass_threshold']}/5 · ${data['duration_seconds'] ~/ 60} minutes'),
+                          const SizedBox(height: 12),
+                          Text(data['scope']),
+                          const Divider(height: 30),
+                          const Text('Your attempts',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w600)),
+                          if (attempts.isEmpty)
+                            const Padding(
+                                padding: EdgeInsets.only(top: 12),
+                                child: Text(
+                                    'No attempt recorded for this account.')),
+                          for (final a in attempts)
+                            Padding(
+                                padding: const EdgeInsets.only(top: 14),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          '${dateLabel(a['started_at'])} · ${a['submitted_at'] == null ? 'Started' : '${a['correct_count']}/5 · ${a['passed'] ? 'Passed' : 'Practice'}'}'),
+                                      Text('Server expiry: ${a['expires_at']}'),
+                                      if (a['submitted_at'] != null)
+                                        Text(
+                                            'Submitted: ${a['submitted_at']} · actual delta +${a['score_delta']}'),
+                                    ])),
+                        ]));
+                  })),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'))
+          ]);
+}
+
+class SkillRoadmapPane extends StatelessWidget {
+  final WorkspaceController controller;
+  const SkillRoadmapPane({super.key, required this.controller});
+  @override
+  Widget build(BuildContext context) {
+    final steps = insightItems(controller, 'roadmap');
+    return Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (steps.isEmpty)
+        const Text('Add or review a CV to see your personal evidence gaps.'),
+      for (final step in steps)
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Wrap(
+                  spacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(step['skill'],
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600)),
+                    Chip(label: Text(step['status'])),
+                    if (step['track_id'] != null)
+                      TextButton(
+                          onPressed: () => showDialog<void>(
+                              context: context,
+                              builder: (_) => ChallengeDialog(
+                                  api: controller.api,
+                                  badge: {
+                                    'id': step['track_id'],
+                                    'name': step['skill']
+                                  },
+                                  onComplete: controller.refresh)),
+                          child: Text(step['status'] == 'assessed'
+                              ? 'Practice again'
+                              : 'Assess this gap')),
+                  ]),
+              Text(step['reason']),
+              const SizedBox(height: 6),
+              Text(step['next_step'],
+                  style: const TextStyle(fontSize: 12, height: 1.5)),
+            ])),
+    ]));
+  }
+}
+
+class EvidenceSkillsGraph extends StatefulWidget {
+  final WorkspaceController controller;
+  final List<Map<String, dynamic>> nodes;
+  const EvidenceSkillsGraph(
+      {super.key, required this.controller, required this.nodes});
+  @override
+  State<EvidenceSkillsGraph> createState() => _EvidenceSkillsGraphState();
+}
+
+class _EvidenceSkillsGraphState extends State<EvidenceSkillsGraph> {
+  String? selected;
+  @override
+  Widget build(BuildContext context) {
+    if (widget.nodes.isEmpty) {
+      return const Surface(
+          child: Text(
+              'CV claims, project sources and passed assessments build this graph.'));
+    }
+    final node = widget.nodes.firstWhere((n) => n['id'] == selected,
+        orElse: () => widget.nodes.first);
+    final sources = node['sources'] as List;
+    return Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Wrap(spacing: 8, runSpacing: 8, children: [
+        for (final n in widget.nodes)
+          ChoiceChip(
+              label: Text(n['name']),
+              selected: n['id'] == node['id'],
+              onSelected: (_) => setState(() => selected = n['id']))
+      ]),
+      const SizedBox(height: 22),
+      Center(
+          child: Chip(
+              avatar: const Icon(Icons.hub_outlined, size: 18),
+              label: Text('${node['name']} · ${node['status']}'))),
+      Center(child: Container(width: 1, height: 20, color: champagne)),
+      for (final source in sources)
+        Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Semantics(
+                label:
+                    '${node['name']} connected to ${source['label']}: ${source['status']}',
+                child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                        border: Border(
+                            left: BorderSide(
+                                color: champagne.withValues(alpha: .6),
+                                width: 2)),
+                        color: champagne.withValues(alpha: .06)),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                              spacing: 12,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(source['label'],
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600)),
+                                Chip(label: Text(source['status']))
+                              ]),
+                          if (source['scope'] != null)
+                            Text(source['scope'],
+                                style:
+                                    const TextStyle(fontSize: 12, height: 1.5)),
+                          TextButton.icon(
+                              onPressed: () => source['kind'] == 'assessment'
+                                  ? showBadgeDetails(context, widget.controller,
+                                      source['badge_id'])
+                                  : widget.controller.select(1),
+                              icon: const Icon(Icons.account_tree_outlined,
+                                  size: 16),
+                              label: const Text('Inspect source connection')),
+                        ])))),
+      const Text(
+          'Declarations, owned provenance and assessed results are distinct. No source silently verifies every skill.',
+          style: TextStyle(fontSize: 12, height: 1.5)),
+    ]));
+  }
+}
+
+class RepositoryFreshness extends StatelessWidget {
+  final WorkspaceController controller;
+  const RepositoryFreshness({super.key, required this.controller});
+  @override
+  Widget build(BuildContext context) {
+    final data =
+        controller.workspace?['insights']?['repository_analytics'] as Map? ??
+            {};
+    final age = data['age_seconds'] as num?;
+    return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(
+              'Cache ${data['freshness'] ?? 'unknown'} · ${age == null ? 'Age unavailable' : '${(age / 3600).floor()} hours old'}'),
+          if (data['synced_at'] != null)
+            Text('Synced: ${data['synced_at']}',
+                style: const TextStyle(fontSize: 12)),
+          Wrap(spacing: 8, children: [
+            for (final entry in (data['languages'] as Map? ?? {}).entries)
+              Chip(label: Text('${entry.key} · ${entry.value} repositories'))
+          ]),
+          if (data['scope'] != null)
+            Text(data['scope'],
+                style: const TextStyle(fontSize: 12, height: 1.5)),
+        ]));
   }
 }
 
@@ -1187,6 +1433,25 @@ class EvidencePane extends ConsumerWidget {
       if (c.list('evidence').isEmpty)
         const EmptyState('Make your work tangible',
             'Link an owned repository, import a coding profile, or submit experience and certificate proof.'),
+      TextButton.icon(
+          onPressed: () => c.run(() async {
+                final selected = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: ['json'],
+                    withData: true);
+                if (selected == null || selected.files.single.bytes == null) {
+                  return;
+                }
+                final file = selected.files.single;
+                await c.api.upload('/coding/import', file.bytes!, file.name,
+                    mime: 'application/json');
+                await c.refresh();
+              }),
+          icon: const Icon(Icons.file_upload_outlined, size: 18),
+          label: const Text('Import coding profile JSON')),
+      const Text(
+          'Imports need source_url and solved fields. Submitted counts stay unverified until an independent source review.',
+          style: TextStyle(fontSize: 12, height: 1.5)),
       for (final e in c.list('evidence'))
         Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -1206,10 +1471,21 @@ class EvidencePane extends ConsumerWidget {
                         ])),
                     Chip(label: Text(e['status']))
                   ]),
+                  if (e['kind'] == 'coding')
+                    Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                            'Claimed solved count: ${e['detail']['solved']}\n${e['detail']['import_method'] ?? 'Manual claim; independent review required'}',
+                            style: const TextStyle(fontSize: 12, height: 1.5))),
                   if ((e['review_note'] ?? '').toString().isNotEmpty)
                     Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: Text('Review: ${e['review_note']}')),
+                  if (e['kind'] == 'certificate')
+                    Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                            'Issuer: ${e['detail']['issuer'] ?? 'Not supplied'} · Reference: ${e['detail']['reference'] ?? 'Not supplied'}\nIssued: ${e['detail']['issued_on'] ?? 'Not supplied'}')),
                   Wrap(spacing: 8, children: [
                     if ((e['url'] ?? '').toString().isNotEmpty)
                       TextButton.icon(
@@ -1223,7 +1499,7 @@ class EvidencePane extends ConsumerWidget {
                           icon:
                               const Icon(Icons.upload_file_outlined, size: 16),
                           label: const Text('Attach PDF proof')),
-                    if (!['project', 'github'].contains(e['kind']))
+                    if (e['has_file'] == true)
                       TextButton.icon(
                           onPressed: () => c.run(() => download(c.api,
                               '/evidence/${e['id']}/file', 'evidence.pdf')),
@@ -1538,7 +1814,10 @@ class _EvidenceEditorState extends State<EvidenceEditor> {
   String? repository, project;
   final title = TextEditingController(),
       url = TextEditingController(),
-      solved = TextEditingController();
+      solved = TextEditingController(),
+      issuer = TextEditingController(),
+      reference = TextEditingController(),
+      issuedOn = TextEditingController();
   bool saving = false;
   String? error;
   @override
@@ -1546,6 +1825,9 @@ class _EvidenceEditorState extends State<EvidenceEditor> {
     title.dispose();
     url.dispose();
     solved.dispose();
+    issuer.dispose();
+    reference.dispose();
+    issuedOn.dispose();
     super.dispose();
   }
 
@@ -1613,6 +1895,23 @@ class _EvidenceEditorState extends State<EvidenceEditor> {
                     keyboardType: TextInputType.url,
                     decoration:
                         const InputDecoration(labelText: 'Source URL (HTTPS)')),
+                if (kind == 'certificate') ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: issuer,
+                      decoration: const InputDecoration(
+                          labelText: 'Certificate issuer')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: reference,
+                      decoration: const InputDecoration(
+                          labelText: 'Credential/reference ID (optional)')),
+                  const SizedBox(height: 12),
+                  TextField(
+                      controller: issuedOn,
+                      decoration: const InputDecoration(
+                          labelText: 'Issued date (optional)')),
+                ],
                 if (kind == 'coding') ...[
                   const SizedBox(height: 12),
                   TextField(
@@ -1639,6 +1938,11 @@ class _EvidenceEditorState extends State<EvidenceEditor> {
                         setState(() => error = 'Add a title');
                         return;
                       }
+                      if (kind == 'certificate' && issuer.text.trim().isEmpty) {
+                        setState(() => error =
+                            'Name the certificate issuer for inspection');
+                        return;
+                      }
                       if (kind == 'project' &&
                           (repository == null || project == null)) {
                         setState(() => error =
@@ -1659,7 +1963,13 @@ class _EvidenceEditorState extends State<EvidenceEditor> {
                             if (kind == 'coding')
                               'solved': int.tryParse(solved.text) ?? 0,
                             if (kind == 'project') 'repository': repository,
-                            if (kind == 'project') 'project': project
+                            if (kind == 'project') 'project': project,
+                            if (kind == 'certificate')
+                              'issuer': issuer.text.trim(),
+                            if (kind == 'certificate')
+                              'reference': reference.text.trim(),
+                            if (kind == 'certificate')
+                              'issued_on': issuedOn.text.trim()
                           }
                         });
                         await c.refresh();
@@ -1727,6 +2037,11 @@ class _ChallengesState extends ConsumerState<ChallengesPane> {
                         '${item['questions']} questions · 5 min\nPass ${item['pass_threshold']} or more to earn a badge.',
                         style: const TextStyle(height: 1.5)),
                     const SizedBox(height: 20),
+                    TextButton.icon(
+                        onPressed: () =>
+                            showBadgeDetails(context, c, item['id']),
+                        icon: const Icon(Icons.info_outline, size: 16),
+                        label: const Text('Badge details')),
                     FilledButton.tonal(
                         onPressed: () => showDialog(
                             context: context,
@@ -1765,7 +2080,12 @@ class _ChallengesState extends ConsumerState<ChallengesPane> {
                   const SizedBox(width: 12),
                   Text(attempt['score_delta'] == null
                       ? ''
-                      : ' +${attempt['score_delta']}')
+                      : ' +${attempt['score_delta']}'),
+                  IconButton(
+                      tooltip: 'Open badge details',
+                      onPressed: () =>
+                          showBadgeDetails(context, c, attempt['badge_id']),
+                      icon: const Icon(Icons.info_outline, size: 18)),
                 ])))
     ]);
   }
@@ -1969,7 +2289,8 @@ class ActivityPane extends ConsumerWidget {
                 ]))),
       const SizedBox(height: 24),
       const SectionTitle('Score evolution',
-          subtitle: 'Only genuine signal changes create a new score snapshot.'),
+          subtitle:
+              'Compare evidence changes, including updates that add zero points.'),
       for (final snapshot in c.list('history'))
         Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -1983,10 +2304,89 @@ class ActivityPane extends ConsumerWidget {
                           fontWeight: FontWeight.w600)),
                   const SizedBox(width: 20),
                   Expanded(child: Text(snapshot['reason'])),
-                  Text(dateLabel(snapshot['created_at']))
-                ])))
+                  Text(dateLabel(snapshot['created_at'])),
+                  IconButton(
+                      tooltip: 'Compare score signals',
+                      onPressed: () =>
+                          showScoreComparison(context, c, snapshot['id']),
+                      icon: const Icon(Icons.compare_arrows)),
+                ]))),
+      const SizedBox(height: 24),
+      const SectionTitle('Reviewer decision audit',
+          subtitle:
+              'Recorded decisions persist after the evidence is removed.'),
+      if (c.list('review_audit').isEmpty)
+        const Text('No independent review decision recorded.'),
+      for (final decision in c.list('review_audit'))
+        ReviewAuditCard(decision: decision),
     ]);
   }
+}
+
+Future<void> showScoreComparison(
+    BuildContext context, WorkspaceController c, dynamic id) {
+  final rows = insightItems(c, 'score_comparisons');
+  final item = rows.firstWhere((r) => r['history_id'] == id, orElse: () => {});
+  return showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+              title: const Text('Evidence change comparison'),
+              content: SizedBox(
+                  width: 580,
+                  child: SingleChildScrollView(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(item['total_delta'] == null
+                            ? 'Initial or oldest available snapshot; no earlier score is assumed.'
+                            : 'Actual score delta: ${item['total_delta']}'),
+                        const SizedBox(height: 12),
+                        if (item['baseline_known'] != true)
+                          const Text(
+                              'An earlier input baseline was not recorded; changes cannot be fully reconstructed.'),
+                        for (final entry
+                            in (item['component_deltas'] as Map? ?? {}).entries)
+                          Text('${entry.key}: ${entry.value} points'),
+                        const Divider(height: 28),
+                        for (final change in item['changes'] as List? ?? [])
+                          Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Text(change)),
+                        const Text(
+                            'A certificate review or CV correction can change evidence without changing formula v1 points.',
+                            style: TextStyle(fontSize: 12, height: 1.5)),
+                      ]))),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'))
+              ]));
+}
+
+class ReviewAuditCard extends StatelessWidget {
+  final Map<String, dynamic> decision;
+  const ReviewAuditCard({super.key, required this.decision});
+  @override
+  Widget build(BuildContext context) => Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Surface(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('${decision['title']} · ${decision['status']}',
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text('Reviewer #${decision['reviewer_id']} · ${decision['created_at']}',
+            style: const TextStyle(fontSize: 12)),
+        const SizedBox(height: 8),
+        Text(decision['note']),
+        if (decision['source']?['detail']?['issuer'] != null)
+          Text('Issuer inspected: ${decision['source']['detail']['issuer']}'),
+        if ((decision['source']?['url'] ?? '').toString().isNotEmpty)
+          SelectableText('Source: ${decision['source']['url']}',
+              style: const TextStyle(fontSize: 12)),
+        Text(
+            'Private proof attached at review: ${decision['source']?['has_file'] == true ? 'Yes' : 'No'}',
+            style: const TextStyle(fontSize: 12)),
+      ])));
 }
 
 class ProfilePane extends ConsumerStatefulWidget {
@@ -2410,6 +2810,7 @@ class ReviewsPane extends ConsumerStatefulWidget {
 
 class _ReviewsState extends ConsumerState<ReviewsPane> {
   List<dynamic>? queue;
+  List<Map<String, dynamic>> audit = [];
   String? error;
   @override
   void initState() {
@@ -2420,9 +2821,14 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
   Future<void> load() async {
     try {
       final q = await ref.read(workspaceProvider).api.call('/reviews');
+      final decisions =
+          await ref.read(workspaceProvider).api.call('/reviews/audit');
       if (mounted) {
         setState(() {
           queue = q;
+          audit = (decisions as List)
+              .map((d) => Map<String, dynamic>.from(d))
+              .toList();
           error = null;
         });
       }
@@ -2446,6 +2852,13 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
       if (queue?.isEmpty == true)
         const EmptyState('The review queue is clear',
             'New experience, certificate and coding submissions appear here.'),
+      if (audit.isNotEmpty) ...[
+        const SizedBox(height: 20),
+        const SectionTitle('Recorded decisions',
+            subtitle: 'Who reviewed each source, when, and why.'),
+        for (final decision in audit) ReviewAuditCard(decision: decision),
+        const SizedBox(height: 20),
+      ],
       for (final e in queue ?? [])
         Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -2459,6 +2872,9 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
                   Text('@${e['handle']} · ${e['kind']}'),
                   if (e['kind'] == 'coding')
                     Text('Claimed solved count: ${e['detail']['solved']}'),
+                  if (e['kind'] == 'certificate')
+                    Text(
+                        'Issuer: ${e['detail']['issuer'] ?? 'Not supplied'} · Reference: ${e['detail']['reference'] ?? 'Not supplied'}\nIssued: ${e['detail']['issued_on'] ?? 'Not supplied'}'),
                   const SizedBox(height: 16),
                   Wrap(spacing: 12, children: [
                     if ((e['url'] ?? '').isNotEmpty)
@@ -2466,11 +2882,12 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
                           onPressed: () => c.run(() => openLink(e['url'])),
                           icon: const Icon(Icons.open_in_new, size: 16),
                           label: const Text('Inspect source')),
-                    TextButton.icon(
-                        onPressed: () => c.run(() => download(
-                            c.api, '/evidence/${e['id']}/file', 'proof.pdf')),
-                        icon: const Icon(Icons.download, size: 16),
-                        label: const Text('Download proof')),
+                    if (e['has_file'] == true)
+                      TextButton.icon(
+                          onPressed: () => c.run(() => download(
+                              c.api, '/evidence/${e['id']}/file', 'proof.pdf')),
+                          icon: const Icon(Icons.download, size: 16),
+                          label: const Text('Download proof')),
                     FilledButton.tonal(
                         onPressed: () =>
                             decision(context, c, e['id'], 'verified'),

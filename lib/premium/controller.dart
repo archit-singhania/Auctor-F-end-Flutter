@@ -34,12 +34,13 @@ class PlatformApi {
     return response.body.isEmpty ? null : jsonDecode(response.body);
   }
 
-  Future<dynamic> upload(String path, Uint8List bytes, String name) async {
+  Future<dynamic> upload(String path, Uint8List bytes, String name,
+      {String mime = 'application/pdf'}) async {
     final req = http.MultipartRequest('POST', Uri.parse('$base/api$path'));
     req.headers.addAll(
         {'Authorization': 'Bearer $token', 'Accept': 'application/json'});
     req.files.add(http.MultipartFile.fromBytes('file', bytes,
-        filename: name, contentType: MediaType('application', 'pdf')));
+        filename: name, contentType: MediaType.parse(mime)));
     final res = await http.Response.fromStream(
         await client.send(req).timeout(const Duration(seconds: 45)));
     if (res.statusCode >= 400) {

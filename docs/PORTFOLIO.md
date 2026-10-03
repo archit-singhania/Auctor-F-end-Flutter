@@ -6,35 +6,35 @@ Do not claim measured user adoption, fraud prevention, benchmark results, produc
 
 ## Feature map
 
-All 20 capabilities have connected interfaces and backend operations. Validation below identifies the actual coverage; it does not claim that every control was exercised in a browser or on a native device. API checks use a real isolated PostgreSQL schema. Provider-boundary checks use explicit fixtures.
+The following map uses the exact 20 approved feature labels; owned authentication, persistent themes/accessibility and original branding are additional foundations. All 20 have connected source/UI/backend implementations. This is implementation completion, not completion of live-provider, remote CI, deployment or native-device gates. API checks use real isolated PostgreSQL; provider-boundary checks use explicit fixtures.
 
 | # | Capability / connected interface | Acceptance and validation |
 |---|---|---|
-| 1 | Owned accounts and expiring sessions / Sign in | Browser sign-in/session reload; API account isolation and logout invalidate access. |
-| 2 | Persistent profile, themes and accessibility / Profile | API preference readback; light/dark real browser images; responsive widget checks. |
-| 3 | Durable CV extraction, cancel/retry / Evidence | Real text-PDF job completes; controlled job-state API checks enforce owned cancel/retry. |
-| 4 | Extraction provenance and source download / Evidence | API source download is owner-only; extraction is explicitly unverified. |
-| 5 | CV review, revision comparison and restore / Evidence | Browser review/save persists a version; API restore checks ownership/readback; failed saves preserve drafts in widget test. |
-| 6 | GitHub OAuth ownership / Overview | State is single-use; provider fixture confirms account ID. Live consent remains operator setup. |
-| 7 | Owned repository project binding / Evidence | Provider fixture binds a repository to a CV project; disconnect removes contributions. |
-| 8 | Repository/language/star/recent-event snapshots / Overview | Connected snapshot interface and bounded provider import; real provider statistics not claimed. |
-| 9 | Five skill tracks / Challenges | API returns five tracks; real browser renders the catalog and Docker questions. |
-| 10 | Timed server grading and replay protection / Challenge dialog | Browser grades 5/5 for +0.6; API rejects expired/foreign attempts and makes replays idempotent. |
-| 11 | Badges and attempt history / Challenges | API preserves earned badges after a failed retry; actual browser score readback is 0.6. |
-| 12 | CV skill roadmap / Overview | Connected derived roadmap maps CV skills to implemented tracks; responsive workspace render checks. |
-| 13 | Experience and private proof / Evidence | API proof upload/download ownership and independent approval contribute 1.5; removal recomputes score. |
-| 14 | Certificates and independent review / Reviews | API self-review rejection, private reviewer access and immutable reviewed proof; certificates do not invent score points. |
-| 15 | Reviewed coding-profile count / Evidence | API approves a sourced 150-count claim for 0.75 points; extracted URLs alone prove nothing. |
-| 16 | Explainable v1 score and history / Overview, Activity | Pure/API tests preserve .25/.15/.30/.15/.15 weights and history; browser displays real assessment delta. |
-| 17 | Activity and read status / Activity | API read operation persists account-scoped read flags. |
-| 18 | Public profiles and revocable sharing / Profile | Real browser creates/revokes a private link; API checks discovery opt-in, redaction and revoked 404. |
-| 19 | Candidate search/filter/save/compare / Discover | API score filter and account-specific save/unsave; connected comparison supports three candidates and clears stale selection after search. |
-| 20 | Reports, QR and embed / Profile | API outputs real PDF/JSON and opt-in SVG; QR/download/embed controls connected. Native picker/device execution remains unverified. |
+| 1 | Observable CV parsing jobs, retry/cancel / Evidence | Actual text-PDF completion, controlled owned cancel/retry/lease tests; durable PostgreSQL jobs in `app/platform.py`. |
+| 2 | Source-linked extraction confidence and editable claims / Evidence | Owner-only source downloads, qualitative review-required confidence, unverified claims and real browser save/readback. Confidence is not a calibrated probability. |
+| 3 | CV revision comparison/restoration / Evidence | Connected comparison/restore; API verifies append-only restoration and owner separation; failed saves keep drafts. |
+| 4 | GitHub OAuth ownership / Overview | Single-use state and provider fixture confirm account ID; live personal consent remains a gate. |
+| 5 | Explicit repository → project evidence binding / Evidence | Owned snapshot binding and current CV project enforced; fixture verifies disconnect contributions. |
+| 6 | Cached repository/contribution analytics and freshness / Overview | `app/insights.py` derives age/current/aging/stale, languages/stars/events with exact limited scope; deterministic freshness test. Live statistics are not claimed. |
+| 7 | Backend multi-skill challenge catalog / Challenges | Five real server tracks; browser renders catalog/Docker questions. |
+| 8 | Server-graded timed attempts/replay protection / Challenge | Actual 5/5/+0.6, API expiry/foreign-attempt/replay tests; no answer keys sent before submission. |
+| 9 | Badge detail pages/attempt history / Badge details | Owned details endpoint, expiry/result/scope display and durable earned state; API and widget source-link checks. |
+| 10 | Evidence-backed skills graph / Overview | Real graph nodes/edges distinguish CV claims, declared project technologies, owned provenance and scoped assessments; API projection/ownership plus interactive widget test. |
+| 11 | Personalized skill-gap roadmap / Overview | Server ranks current CV/project gaps, maps exact supported aliases, explains practice steps, launches matching track; unsupported skills remain honest gaps. API/pure tests. |
+| 12 | Experience-proof submission/reviewer workflow / Evidence, Reviews | Private PDF ownership, independent decisions, at most 1.5 points and removal; actual API checks. |
+| 13 | Certificate evidence and issuer/source inspection / Evidence, Reviews | Issuer/reference/date fields, source/proof inspection and durable decision snapshot; API issuer readback. Certificates add no v1 points. |
+| 14 | Coding-profile imports with honest verification status / Evidence | Bounded JSON import with source/count/digest, explicit user-supplied/unverified status; API import/privacy/error checks. Manual count and independent 150-count approval contribute 0.75. No live provider count scrape is claimed. |
+| 15 | Explainable versioned score calculation / Overview | Formula v1 and original weights/denominators remain tested; no silent scoring migration. |
+| 16 | Score history/evidence-change comparisons / Activity | Stored input snapshots and component deltas identify add/remove/status changes including zero-point certificate changes; legacy missing baselines labelled unknown. API/pure comparison tests. |
+| 17 | Reviewer decisions/audit trail / Activity, Reviews | Append-only reviewer identity/time/source/issuer/rationale; persists after evidence removal; API authorization/readback checks. Read-status is additional supporting functionality. |
+| 18 | Public recruiter profiles/privacy/revocation / Profile | Redacted opt-in profiles and private shares; actual browser create/revoke and API 404/privacy checks. |
+| 19 | Opt-in discovery/saved profiles/comparison / Discover | API current profile filters, account-specific save/unsave and UI comparison up to three; stale selections cleared. |
+| 20 | PDF/JSON evidence reports, QR/profile badges / Profile | Real PDF/JSON and opt-in SVG, connected QR/download/embed; API report/privacy checks. Native picker/scanning execution remains a gate. |
 
 ## Verified locally
 
-- Nine backend tests passed against a real isolated PostgreSQL schema, including actual text-PDF jobs, revisions, cancel/retry state transitions, independent reviews/private proof, account isolation, score idempotency, activity, candidate saves, exports, OAuth mocked at the provider boundary and project ownership.
-- Seven standard Flutter tests passed at mobile/desktop sizes; analyzer reported no issues. The additional failure-path test confirms that failed CV saves retain the edited draft for retry.
+- Eighteen backend tests passed: real isolated PostgreSQL/temporary private files, actual text-PDF jobs, revisions, job states, reviews/private proof, account isolation, score replay, activity/saves/exports, provider-boundary OAuth, graph/roadmap/badge/issuer/audit projections and bounded unverified profile imports. Pure checks cover graph/freshness/evidence comparisons and production volume/origin guards.
+- Eight standard Flutter tests passed: mobile/desktop layouts, safe API failures, retained CV drafts and interactive graph source → scoped badge details. Final analyzer/build results are recorded alongside the release artifacts.
 - Isolated headless Chrome passed actual sign-in, CV review/save/readback, five-question Docker submission with server-graded +0.6, profile, private share creation/revocation/redaction, persisted session reload, and mobile light/dark layouts. No browser page errors were observed. `scripts/browser-qa.cjs` reproduces this against local `AUCTOR_API_URL` and `AUCTOR_WEB_URL`; it creates clearly labelled local QA records and requires Playwright/installed Chrome. Never target production with this test.
 - Flutter JavaScript release web bundle built successfully. Secure-storage package currently prevents a WebAssembly build; JavaScript output is the supported verified target.
 - Offscreen screenshots use the real Flutter widget tree and explicitly synthetic test fixtures. They are **layout evidence, not browser/live provider evidence**. Reproduce with `AUCTOR_QA_FONT_ROOT` pointing to Flutter's bundled material-font directory and run `flutter test test/render_artifacts_test.dart`; outputs appear in ignored `build/qa`.
@@ -48,9 +48,15 @@ Original branding: `assets/brand/auctor-mark.svg`, exported platform launchers, 
 
 ## Review artifacts
 
-The following are real Chrome renders connected to the local API, with explicitly labelled QA data: [landing](screenshots/landing-desktop.png), [workspace](screenshots/overview-desktop.png), [CV editor](screenshots/cv-review.png), [assessment](screenshots/challenge-result.png), [profile](screenshots/profile-desktop.png), [mobile](screenshots/overview-mobile.png) and [mobile dark](screenshots/overview-mobile-dark.png). The desktop overview precedes the challenge; mobile screenshots show its actual 0.6 result.
+These are real same-run Chrome renders on 2026-10-03, connected to the local API with labelled QA data: [landing](screenshots/landing-desktop.png), [workspace](screenshots/overview-desktop.png), [CV editor](screenshots/cv-review.png), [assessment](screenshots/challenge-result.png), [badge details](screenshots/badge-detail.png), [skills graph](screenshots/skills-graph.png), [profile](screenshots/profile-desktop.png), [mobile](screenshots/overview-mobile.png) and [mobile dark](screenshots/overview-mobile-dark.png). Desktop overview precedes grading; badge/graph/mobile show the actual 0.6 assessment result.
 
 The Android debug artifact is generated at `build/app/outputs/apk/debug/app-debug.apk`; the review web bundle is `build/web`. Generated builds remain ignored. No iOS build, device run, hosted deployment, live provider consent, remote CI execution or credential rotation is claimed.
 
 The [actual connected browser demonstration](demo/auctor-connected-workflow.webm) shows CV editing, server grading, private-link revocation and responsive themes. Its [fixture and reproduction notes](demo/README.md) distinguish demonstration data from live provider evidence.
+
+The [complete manual test guide](MANUAL_TESTS.md) provides startup commands and expected outcomes for all 20 capabilities, including errors, persistence, reviewer setup and native-device gates. [Production activation](DEPLOYMENT.md) remains deferred; environment-gated Vercel/Railway configuration and two Node production-readiness tests are prepared without publishing.
+
+The [architecture diagram](ARCHITECTURE.md) maps active modules and trust boundaries. CI includes a macOS unsigned iOS release build/artifact and manual dispatch, unrun remotely; signing and device validation remain outstanding.
+
+[Final release metadata](RELEASE.md) records actual passed totals, exact final APK/web/video size/hash/date, screenshot provenance and deferred gates. The final Chrome flow and Android rebuild both passed after the graph/badge/issuer/audit/import additions; analyzer was clean.
 

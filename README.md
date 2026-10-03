@@ -8,6 +8,8 @@ Use Flutter stable and the companion FastAPI v2 API. `flutter pub get`, then `fl
 
 `flutter build web --release --dart-define=API_BASE_URL=https://your-api-domain --dart-define=WEB_BASE_URL=https://your-web-domain` creates a reviewable production bundle. Do not deploy the localhost default. Vercel configuration revalidates stable Flutter filenames instead of caching old bundles forever. GitHub OAuth callback is configured in the API and returns to the current `WEB_URL` workspace route.
 
+Vercel's pinned build requires explicit public `AUCTOR_API_URL`/`AUCTOR_WEB_URL` and refuses an unavailable, development or storage-unconfigured API. Hosting is deferred; [activation notes](docs/DEPLOYMENT.md) document the existing target references and required private production setup.
+
 ## Working journeys
 
 - Create/sign into an owned private workspace; sessions persist in platform secure storage.
@@ -32,4 +34,6 @@ Run `flutter analyze`, `flutter test` and `flutter build web --release`. Tests c
 Backend tests use isolated local PostgreSQL and mocked provider boundaries; live GitHub OAuth/OpenAI credentials, deployment HTTPS/storage/backups and account-owner credential rotation remain operator setup.
 
 See [the 20-capability acceptance record and actual browser screenshots](docs/PORTFOLIO.md). Local Chrome QA also exercises real sign-in, CV saves, server assessment grading, share revocation and session restoration. `scripts/browser-qa.cjs` uses isolated Chrome and creates labelled QA accounts; configure its local API/web URLs and Playwright path before running it against a local instance.
+
+Follow [the full manual test guide](docs/MANUAL_TESTS.md) for exact startup commands, synthetic input generation, all 20 feature journeys, expected errors/privacy/persistence and the built Android artifact. The browser script refuses non-local targets. No live OAuth, native-device execution or hosted deployment is claimed.
 
