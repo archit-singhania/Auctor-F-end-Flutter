@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'controller.dart';
+import 'liquid_glass.dart';
 import 'package:flutter/foundation.dart';
 import 'save_stub.dart' if (dart.library.io) 'save_io.dart';
 
@@ -62,31 +62,38 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
     return MaterialApp.router(
         title: 'Auctor · Proof of your craft',
         debugShowCheckedModeBanner: false,
-        theme: theme(Brightness.light),
-        darkTheme: theme(Brightness.dark),
+        theme: theme(Brightness.light, highContrast: c.highContrast),
+        darkTheme: theme(Brightness.dark, highContrast: c.highContrast),
+        highContrastTheme: theme(Brightness.light, highContrast: true),
+        highContrastDarkTheme: theme(Brightness.dark, highContrast: true),
         themeMode: c.theme,
         routerConfig: router,
         builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(
+                highContrast:
+                    c.highContrast || MediaQuery.of(context).highContrast,
                 disableAnimations: c.reducedMotion ||
                     MediaQuery.of(context).disableAnimations),
             child: child!));
   }
 }
 
-ThemeData theme(Brightness brightness) {
+ThemeData theme(Brightness brightness, {bool highContrast = false}) {
   final dark = brightness == Brightness.dark;
   final scheme = ColorScheme.fromSeed(seedColor: pine, brightness: brightness)
       .copyWith(
           primary: dark ? const Color(0xffb5dcd0) : pine,
           secondary: champagne,
-          surface: dark ? const Color(0xff192822) : const Color(0xfffffdf7));
+          surface: dark ? const Color(0xff1c2225) : const Color(0xfffffdf7),
+          onSurfaceVariant:
+              dark ? const Color(0xffc4cfc8) : const Color(0xff46554c),
+          outline: highContrast ? (dark ? Colors.white : Colors.black) : null);
   return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor:
-          dark ? const Color(0xff0c1815) : const Color(0xfff5f4ec),
+          dark ? const Color(0xff101518) : const Color(0xfff5f4ec),
       textTheme: Typography.material2021().black.apply(
           bodyColor: dark ? const Color(0xfff0f1e9) : const Color(0xff182821),
           displayColor:
@@ -101,6 +108,21 @@ ThemeData theme(Brightness brightness) {
       filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)))),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              side: BorderSide(
+                  color: highContrast
+                      ? scheme.onSurface
+                      : scheme.outline.withValues(alpha: .55)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)))),
+      iconButtonTheme: IconButtonThemeData(
+          style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16)))),
       cardTheme: CardThemeData(
@@ -174,18 +196,26 @@ class Surface extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final c = ref.watch(workspaceProvider);
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final useGlass = glass && !c.reducedTransparency;
+    final contrast = c.highContrast || MediaQuery.highContrastOf(context);
+    if (glass) {
+      return LiquidGlass(
+          padding: padding,
+          opaque: c.reducedTransparency,
+          reducedMotion: c.reducedMotion,
+          highContrast: contrast,
+          child: child);
+    }
     final content = Container(
         padding: padding,
         decoration: BoxDecoration(
-            color: Theme.of(context)
-                .colorScheme
-                .surface
-                .withValues(alpha: useGlass ? 0.76 : 1),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 1),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-                color:
-                    dark ? Colors.white12 : Colors.white.withValues(alpha: .8)),
+                color: contrast
+                    ? Theme.of(context).colorScheme.onSurface
+                    : dark
+                        ? Colors.white12
+                        : Colors.white.withValues(alpha: .8)),
             boxShadow: [
               BoxShadow(
                   color: Colors.black.withValues(alpha: dark ? 0.12 : 0.025),
@@ -193,13 +223,55 @@ class Surface extends ConsumerWidget {
                   offset: const Offset(0, 12))
             ]),
         child: Material(type: MaterialType.transparency, child: child));
-    return ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: useGlass
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                child: content)
-            : content);
+    return content;
+  }
+}
+
+class AuctorDialog extends ConsumerWidget {
+  final Widget? title, content;
+  final List<Widget>? actions;
+  const AuctorDialog({super.key, this.title, this.content, this.actions});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = ref.watch(workspaceProvider);
+    return Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.all(24),
+        child: SizedBox(
+            width: 720,
+            child: LiquidGlass(
+                opaque: c.reducedTransparency,
+                highContrast:
+                    c.highContrast || MediaQuery.highContrastOf(context),
+                reducedMotion: c.reducedMotion,
+                padding: EdgeInsets.zero,
+                radius: 28,
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (title != null)
+                        Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                            child: DefaultTextStyle(
+                                style: Theme.of(context).textTheme.titleLarge!,
+                                child: title!)),
+                      if (content != null)
+                        Flexible(
+                            child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                child: SingleChildScrollView(child: content!))),
+                      if (actions != null)
+                        Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Wrap(
+                                alignment: WrapAlignment.end,
+                                spacing: 10,
+                                runSpacing: 8,
+                                children: actions!)),
+                    ]))));
   }
 }
 
@@ -619,17 +691,10 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
                             for (final item in nav.asMap().entries)
                               Padding(
                                   padding: const EdgeInsets.only(bottom: 8),
-                                  child: ListTile(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16)),
+                                  child: GlassDestination(
+                                      label: item.value.$1,
+                                      icon: item.value.$2,
                                       selected: current == item.key,
-                                      selectedTileColor: Theme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withValues(alpha: .12),
-                                      leading: Icon(item.value.$2),
-                                      title: Text(item.value.$1),
                                       onTap: () => c.select(item.key))),
                             const Spacer(),
                             const Text('PROOF, WITH CONTEXT',
@@ -648,50 +713,71 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
             child: Column(children: [
           Padding(
               padding: EdgeInsets.fromLTRB(wide ? 12 : 20, 24, 24, 16),
-              child: Row(children: [
-                if (!wide) ...[
-                  const AuctorMark(size: 32),
-                  const SizedBox(width: 12)
-                ],
-                Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                      Text(destinations[current].$1,
-                          style: const TextStyle(
-                              fontSize: 27,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -.8)),
-                      Text('Your craft. Your evidence. Your story.',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant))
-                    ])),
-                if (c.busy)
-                  const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2)),
-                IconButton(
-                    tooltip: 'Refresh workspace',
-                    onPressed: c.busy ? null : () => c.run(c.refresh),
-                    icon: const Icon(Icons.refresh)),
-                PopupMenuButton<ThemeMode>(
-                    tooltip: 'Appearance',
-                    onSelected: (v) => c.preferences(mode: v),
-                    itemBuilder: (_) => [
-                          for (final v in ThemeMode.values)
-                            PopupMenuItem(value: v, child: Text(v.name))
-                        ],
-                    icon: const Icon(Icons.contrast)),
-                if (!wide)
-                  IconButton(
-                      tooltip: 'Sign out',
-                      onPressed: c.logout,
-                      icon: const Icon(Icons.logout))
-              ])),
+              child: Surface(
+                  glass: true,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: LayoutBuilder(builder: (context, toolbar) {
+                    final title = Row(children: [
+                      if (!wide) ...[
+                        const AuctorMark(size: 32),
+                        const SizedBox(width: 12)
+                      ],
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(destinations[current].$1,
+                                style: const TextStyle(
+                                    fontSize: 27,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: -.8)),
+                            if (wide)
+                              Text('Your craft. Your evidence. Your story.',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant))
+                          ])),
+                    ]);
+                    final actions =
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                      if (c.busy)
+                        const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2)),
+                      IconButton(
+                          tooltip: 'Refresh workspace',
+                          onPressed: c.busy ? null : () => c.run(c.refresh),
+                          icon: const Icon(Icons.refresh)),
+                      PopupMenuButton<ThemeMode>(
+                          tooltip: 'Appearance',
+                          onSelected: (v) => c.preferences(mode: v),
+                          itemBuilder: (_) => [
+                                for (final v in ThemeMode.values)
+                                  PopupMenuItem(value: v, child: Text(v.name))
+                              ],
+                          icon: const Icon(Icons.contrast)),
+                      if (!wide)
+                        IconButton(
+                            tooltip: 'Sign out',
+                            onPressed: c.logout,
+                            icon: const Icon(Icons.logout)),
+                    ]);
+                    return toolbar.maxWidth < 520
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                                title,
+                                const SizedBox(height: 4),
+                                Align(
+                                    alignment: Alignment.centerRight,
+                                    child: actions)
+                              ])
+                        : Row(children: [Expanded(child: title), actions]);
+                  }))),
           Expanded(
               child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(wide ? 12 : 20, 8, 24, 32),
@@ -715,38 +801,19 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
                     glass: true,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
+                    child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(children: [
                           for (final item in nav.asMap().entries)
-                            Expanded(
-                                child: InkWell(
-                                    borderRadius: BorderRadius.circular(18),
-                                    onTap: () => c.select(item.key),
-                                    child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 6),
-                                        child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(item.value.$2,
-                                                  color: current == item.key
-                                                      ? Theme.of(context)
-                                                          .colorScheme
-                                                          .primary
-                                                      : Theme.of(context)
-                                                          .colorScheme
-                                                          .onSurfaceVariant),
-                                              const SizedBox(height: 4),
-                                              Text(item.value.$1,
-                                                  style: TextStyle(
-                                                      fontSize: 9,
-                                                      fontWeight: current ==
-                                                              item.key
-                                                          ? FontWeight.w700
-                                                          : FontWeight.w400))
-                                            ]))))
-                        ])))
+                            SizedBox(
+                                width: 78,
+                                child: GlassDestination(
+                                    compact: true,
+                                    label: item.value.$1,
+                                    icon: item.value.$2,
+                                    selected: current == item.key,
+                                    onTap: () => c.select(item.key)))
+                        ]))))
         ]))
       ]);
     }))));
@@ -761,10 +828,9 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 18),
-      child: Row(children: [
-        Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      child: LayoutBuilder(builder: (context, box) {
+        final copy =
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title,
               style: const TextStyle(
                   fontSize: 24,
@@ -776,10 +842,19 @@ class SectionTitle extends StatelessWidget {
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     height: 1.4))
-          ]
-        ])),
-        if (trailing != null) trailing!
-      ]));
+          ],
+        ]);
+        return trailing != null &&
+                (box.maxWidth < 600 ||
+                    MediaQuery.textScalerOf(context).scale(14) > 20)
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [copy, const SizedBox(height: 14), trailing!])
+            : Row(children: [
+                Expanded(child: copy),
+                if (trailing != null) trailing!
+              ]);
+      }));
 }
 
 class EmptyState extends StatelessWidget {
@@ -824,46 +899,59 @@ class OverviewPane extends ConsumerWidget {
           subtitle:
               'Welcome back, ${c.profile['display_name']}. Every point has a source.'),
       LayoutBuilder(builder: (context, box) {
+        final ring = SizedBox(
+            width: 150,
+            height: 150,
+            child: Stack(alignment: Alignment.center, children: [
+              SizedBox.expand(
+                  child: CircularProgressIndicator(
+                      value: score / 10,
+                      strokeWidth: 9,
+                      strokeCap: StrokeCap.round,
+                      backgroundColor: champagne.withValues(alpha: .18),
+                      color: champagne)),
+              Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text(score.toStringAsFixed(1),
+                            style: const TextStyle(
+                                fontSize: 38, fontWeight: FontWeight.w500)),
+                        const Text('OUT OF 10',
+                            style: TextStyle(fontSize: 9, letterSpacing: 2))
+                      ]))),
+            ]));
+        final summaryCopy =
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Auctor score',
+              style: TextStyle(fontSize: 23, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          const Text(
+              'A transparent summary of evidence.\nFormula v1 • five weighted signals',
+              style: TextStyle(height: 1.5)),
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, children: [
+            Chip(label: Text('${passed.length} badges')),
+            Chip(label: Text('${c.cv['projects'].length} projects'))
+          ]),
+        ]);
         final summary = Surface(
-            child: Row(children: [
-          SizedBox(
-              width: 125,
-              height: 125,
-              child: Stack(alignment: Alignment.center, children: [
-                SizedBox.expand(
-                    child: CircularProgressIndicator(
-                        value: score / 10,
-                        strokeWidth: 9,
-                        strokeCap: StrokeCap.round,
-                        backgroundColor: champagne.withValues(alpha: .18),
-                        color: champagne)),
-                Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text(score.toStringAsFixed(1),
-                      style: const TextStyle(
-                          fontSize: 38, fontWeight: FontWeight.w500)),
-                  const Text('OUT OF 10',
-                      style: TextStyle(fontSize: 9, letterSpacing: 2))
-                ])
-              ])),
-          const SizedBox(width: 24),
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                const Text('Auctor score',
-                    style:
-                        TextStyle(fontSize: 23, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                const Text(
-                    'A transparent summary of evidence.\nFormula v1 • five weighted signals',
-                    style: TextStyle(height: 1.5)),
-                const SizedBox(height: 12),
-                Wrap(spacing: 8, children: [
-                  Chip(label: Text('${passed.length} badges')),
-                  Chip(label: Text('${c.cv['projects'].length} projects'))
-                ])
-              ]))
-        ]));
+            child: box.maxWidth < 520 ||
+                    MediaQuery.textScalerOf(context).scale(14) > 20
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                        Center(child: ring),
+                        const SizedBox(height: 24),
+                        summaryCopy
+                      ])
+                : Row(children: [
+                    ring,
+                    const SizedBox(width: 24),
+                    Expanded(child: summaryCopy)
+                  ]));
+
         final breakdown = Surface(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -936,14 +1024,14 @@ class OverviewPane extends ConsumerWidget {
       Surface(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(
-              child: Text(
-                  github.isEmpty
-                      ? 'Connect the source of your work'
-                      : '@${github['login']}',
-                  style: const TextStyle(
-                      fontSize: 21, fontWeight: FontWeight.w600))),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(
+              github.isEmpty
+                  ? 'Connect the source of your work'
+                  : '@${github['login']}',
+              style:
+                  const TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
           FilledButton.tonalIcon(
               onPressed: c.busy
                   ? null
@@ -1020,7 +1108,7 @@ class _BadgeDetailsState extends State<BadgeDetailsDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AuctorDialog(
           title: const Text('Badge details'),
           content: SizedBox(
               width: 620,
@@ -1333,10 +1421,10 @@ class EvidencePane extends ConsumerWidget {
       Surface(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Expanded(
-              child: Text('Your current CV',
-                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.w600))),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Your current CV',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
           TextButton.icon(
               onPressed: () => showDialog(
                   context: context,
@@ -1568,7 +1656,7 @@ Future<void> confirmDelete(
     BuildContext context, WorkspaceController c, Map<String, dynamic> e) async {
   final yes = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => AuctorDialog(
               title: const Text('Remove this evidence?'),
               content: const Text(
                   'Your score is recalculated from the remaining sources.'),
@@ -1613,7 +1701,7 @@ class _CvEditorState extends State<CvEditor> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AuctorDialog(
           title: const Text('Review your story'),
           content: SizedBox(
               width: 650,
@@ -1774,7 +1862,7 @@ class VersionComparison extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = (current['skills'] as List).toSet(),
         then = (previous['skills'] as List).toSet();
-    return AlertDialog(
+    return AuctorDialog(
         title: const Text('Revision comparison'),
         content: SizedBox(
             width: 500,
@@ -1837,7 +1925,7 @@ class _EvidenceEditorState extends State<EvidenceEditor> {
     final repos =
         (c.profile['github_identity']?['repositories'] as List? ?? []);
     final projects = c.cv['projects'] as List;
-    return AlertDialog(
+    return AuctorDialog(
         title: const Text('Add supporting evidence'),
         content: SizedBox(
             width: 550,
@@ -2072,15 +2160,20 @@ class _ChallengesState extends ConsumerState<ChallengesPane> {
                       color: champagne),
                   const SizedBox(width: 14),
                   Expanded(
-                      child: Text(
-                          '${attempt['badge_id']} · ${dateLabel(attempt['started_at'])}')),
-                  Text(attempt['submitted_at'] == null
-                      ? 'Started'
-                      : '${attempt['correct_count']}/5 · ${attempt['passed'] == true ? 'Passed' : 'Practice'}'),
-                  const SizedBox(width: 12),
-                  Text(attempt['score_delta'] == null
-                      ? ''
-                      : ' +${attempt['score_delta']}'),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(
+                            '${attempt['badge_id']} · ${dateLabel(attempt['started_at'])}'),
+                        const SizedBox(height: 4),
+                        Wrap(spacing: 12, children: [
+                          Text(attempt['submitted_at'] == null
+                              ? 'Started'
+                              : '${attempt['correct_count']}/5 · ${attempt['passed'] == true ? 'Passed' : 'Practice'}'),
+                          if (attempt['score_delta'] != null)
+                            Text('Actual delta: +${attempt['score_delta']}'),
+                        ]),
+                      ])),
                   IconButton(
                       tooltip: 'Open badge details',
                       onPressed: () =>
@@ -2145,7 +2238,7 @@ class _ChallengeState extends State<ChallengeDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AuctorDialog(
           title: Row(children: [
             Expanded(child: Text(widget.badge['name'])),
             if (result == null)
@@ -2329,7 +2422,7 @@ Future<void> showScoreComparison(
   final item = rows.firstWhere((r) => r['history_id'] == id, orElse: () => {});
   return showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_) => AuctorDialog(
               title: const Text('Evidence change comparison'),
               content: SizedBox(
                   width: 580,
@@ -2476,13 +2569,14 @@ class _ProfileState extends ConsumerState<ProfilePane> {
             TextButton.icon(
                 onPressed: () => showDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
+                    builder: (_) => AuctorDialog(
                             title: const Text('Share your profile'),
                             content: SizedBox(
                                 width: 240,
                                 height: 240,
                                 child: QrImageView(
                                     data: publicUrl,
+                                    padding: const EdgeInsets.all(16),
                                     backgroundColor: Colors.white)),
                             actions: [
                               TextButton(
@@ -2548,7 +2642,13 @@ class _ProfileState extends ConsumerState<ProfilePane> {
             title: const Text('Reduce transparency'),
             subtitle: const Text('Use opaque navigation and panels.'),
             value: c.reducedTransparency,
-            onChanged: (v) => c.preferences(transparency: v))
+            onChanged: (v) => c.preferences(transparency: v)),
+        SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Increase contrast'),
+            subtitle: const Text('Stronger text, borders and opaque controls.'),
+            value: c.highContrast,
+            onChanged: (v) => c.preferences(contrast: v))
       ])),
       const SizedBox(height: 24),
       const SectionTitle('Take your evidence with you'),
@@ -2751,7 +2851,7 @@ class CandidateComparison extends StatelessWidget {
   final List<Map<String, dynamic>> candidates;
   const CandidateComparison({super.key, required this.candidates});
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AuctorDialog(
           title: const Text('Evidence side by side'),
           content: SizedBox(
               width: 900,
@@ -2906,7 +3006,7 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
     final note = TextEditingController();
     final result = await showDialog<String>(
         context: context,
-        builder: (ctx) => AlertDialog(
+        builder: (ctx) => AuctorDialog(
                 title: Text(status == 'verified'
                     ? 'Record verification'
                     : 'Record rejection'),

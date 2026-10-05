@@ -164,19 +164,20 @@ void main() {
   testWidgets('CV save failure preserves the reviewed draft for retry',
       (tester) async {
     Map<String, dynamic>? submitted;
-    await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-            body: CvEditor(
-                data: const {
+    await tester.pumpWidget(ProviderScope(
+        child: MaterialApp(
+            home: Scaffold(
+                body: CvEditor(
+                    data: const {
           'skills': ['Docker'],
           'projects': [],
           'experience': [],
           'profiles': {}
         },
-                onSave: (data) async {
-                  submitted = data;
-                  throw ApiFailure('Server unavailable', 503);
-                }))));
+                    onSave: (data) async {
+                      submitted = data;
+                      throw ApiFailure('Server unavailable', 503);
+                    })))));
     await tester.enterText(find.byType(TextField).first, 'Docker, Redis');
     await tester.tap(find.text('Save reviewed CV'));
     await tester.pumpAndSettle();

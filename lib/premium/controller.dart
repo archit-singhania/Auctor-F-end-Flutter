@@ -9,8 +9,11 @@ class PlatformApi {
   static const base = String.fromEnvironment('API_BASE_URL',
       defaultValue: 'http://localhost:8000');
   final http.Client client;
+  final Duration requestTimeout;
   String? token;
-  PlatformApi({http.Client? client}) : client = client ?? http.Client();
+  PlatformApi(
+      {http.Client? client, this.requestTimeout = const Duration(seconds: 30)})
+      : client = client ?? http.Client();
   Future<dynamic> call(String path,
       {String method = 'GET', Object? data, bool authenticated = true}) async {
     final headers = {
@@ -21,8 +24,10 @@ class PlatformApi {
     final req = http.Request(method, Uri.parse('$base/api$path'))
       ..headers.addAll(headers);
     if (data != null) req.body = jsonEncode(data);
-    final response = await http.Response.fromStream(
-        await client.send(req).timeout(const Duration(seconds: 30)));
+    // Bound reading the body too: a server can send headers then stall.
+    final response =
+        await (() async => http.Response.fromStream(await client.send(req)))()
+            .timeout(requestTimeout);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       String message = 'Request failed (${response.statusCode})';
       try {
@@ -41,8 +46,9 @@ class PlatformApi {
         {'Authorization': 'Bearer $token', 'Accept': 'application/json'});
     req.files.add(http.MultipartFile.fromBytes('file', bytes,
         filename: name, contentType: MediaType.parse(mime)));
-    final res = await http.Response.fromStream(
-        await client.send(req).timeout(const Duration(seconds: 45)));
+    final res =
+        await (() async => http.Response.fromStream(await client.send(req)))()
+            .timeout(const Duration(seconds: 45));
     if (res.statusCode >= 400) {
       String message = 'Upload failed';
       try {
@@ -79,11 +85,24 @@ class WorkspaceController extends ChangeNotifier {
   bool loading = true, busy = false;
   String? error;
   ThemeMode theme = ThemeMode.system;
-  bool reducedMotion = false, reducedTransparency = false;
+  bool reducedMotion = false, reducedTransparency = false, highContrast = false;
   int destination = 0;
+  bool _disposed = false;
   WorkspaceController({PlatformApi? api, FlutterSecureStorage? storage})
       : api = api ?? PlatformApi(),
         storage = storage ?? const FlutterSecureStorage();
+
+  @override
+  void dispose() {
+    _disposed = true;
+    api.client.close();
+    super.dispose();
+  }
+
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
   Map<String, dynamic> get profile =>
       Map<String, dynamic>.from(workspace?['profile'] ?? {});
   Map<String, dynamic> get cv => Map<String, dynamic>.from(workspace?['cv'] ??
@@ -102,18 +121,18 @@ class WorkspaceController extends ChangeNotifier {
       error = e.toString();
     }
     loading = false;
-    notifyListeners();
+    _notify();
   }
 
   void select(int value) {
     destination = value;
     error = null;
-    notifyListeners();
+    _notify();
   }
 
   void previewTheme(ThemeMode value) {
     theme = value;
-    notifyListeners();
+    _notify();
   }
 
   Future<void> authenticate(Map<String, dynamic> credentials,
@@ -138,8 +157,9 @@ class WorkspaceController extends ChangeNotifier {
       };
       reducedMotion = prefs['reduced_motion'] == true;
       reducedTransparency = prefs['reduced_transparency'] == true;
+      highContrast = prefs['high_contrast'] == true;
       error = null;
-      notifyListeners();
+      _notify();
     } on ApiFailure catch (e) {
       if (e.status == 401) {
         api.token = null;
@@ -154,24 +174,35 @@ class WorkspaceController extends ChangeNotifier {
     if (busy) return;
     busy = true;
     error = null;
-    notifyListeners();
+    _notify();
     try {
       await action();
     } catch (e) {
       error = e.toString();
     } finally {
       busy = false;
-      notifyListeners();
+      _notify();
     }
   }
 
   Future<void> logout() async {
     await run(() async {
-      await api.call('/auth/logout', method: 'POST');
+      Object? remoteFailure;
+      try {
+        await api.call('/auth/logout', method: 'POST');
+      } catch (e) {
+        remoteFailure = e;
+      }
+      // Local sign-out must still work when the API is unavailable.
       await storage.delete(key: 'auctor-session');
       api.token = null;
       workspace = null;
       destination = 0;
+      if (remoteFailure != null) {
+        throw ApiFailure(
+            'Signed out on this device. The API could not revoke the previous server session.',
+            0);
+      }
     });
   }
 
@@ -181,7 +212,10 @@ class WorkspaceController extends ChangeNotifier {
         await refresh();
       });
   Future<void> preferences(
-      {ThemeMode? mode, bool? motion, bool? transparency}) async {
+      {ThemeMode? mode,
+      bool? motion,
+      bool? transparency,
+      bool? contrast}) async {
     await mutate('/me', method: 'PATCH', data: {
       'display_name': profile['display_name'],
       'bio': profile['bio'],
@@ -190,7 +224,8 @@ class WorkspaceController extends ChangeNotifier {
         ...Map<String, dynamic>.from(profile['preferences'] ?? {}),
         'theme': (mode ?? theme).name,
         'reduced_motion': motion ?? reducedMotion,
-        'reduced_transparency': transparency ?? reducedTransparency
+        'reduced_transparency': transparency ?? reducedTransparency,
+        'high_contrast': contrast ?? highContrast
       }
     });
   }
