@@ -89,12 +89,14 @@ ThemeData theme(Brightness brightness, {bool highContrast = false}) {
               dark ? const Color(0xffc4cfc8) : const Color(0xff46554c),
           outline: highContrast ? (dark ? Colors.white : Colors.black) : null);
   return ThemeData(
+      fontFamily: 'Inter',
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor:
           dark ? const Color(0xff101518) : const Color(0xfff5f4ec),
       textTheme: Typography.material2021().black.apply(
+          fontFamily: 'Inter',
           bodyColor: dark ? const Color(0xfff0f1e9) : const Color(0xff182821),
           displayColor:
               dark ? const Color(0xfff0f1e9) : const Color(0xff182821)),
@@ -2742,8 +2744,9 @@ class _DiscoverState extends ConsumerState<DiscoverPane> {
                     tooltip: 'Search',
                     icon: const Icon(Icons.search)))),
         const SizedBox(height: 16),
+        const Align(
+            alignment: Alignment.centerLeft, child: Text('Minimum score')),
         Row(children: [
-          const Text('Minimum score'),
           Expanded(
               child: Slider(
                   value: minimum,

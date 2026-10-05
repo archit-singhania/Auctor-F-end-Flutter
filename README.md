@@ -25,7 +25,7 @@ The app exposes honest pending/unconfigured states. Extracted profile URLs do no
 
 ## Source
 
-`lib/main.dart` mounts `lib/premium/app.dart`; `lib/premium/controller.dart` owns authentication/network/persistence state. The previous `lib/core`, `lib/features` and `lib/shared` implementation remains as migration reference and is not mounted. `assets/brand/auctor-mark.svg` is the original mark; `export_brand.py` reproducibly exports matching platform icons. Flutter uses platform typography without a font network request.
+`lib/main.dart` mounts `lib/premium/app.dart`; `lib/premium/controller.dart` owns authentication/network/persistence state. The previous `lib/core`, `lib/features` and `lib/shared` implementation remains as migration reference and is not mounted. `assets/brand/auctor-mark.svg` is the original mark; `export_brand.py` reproducibly exports matching platform icons. Flutter bundles the licensed Inter font and CanvasKit engine for local rendering without external font/engine requests.
 
 ## Verification and limitations
 
@@ -33,7 +33,7 @@ Run `flutter analyze`, `flutter test` and `flutter build web --release`. Tests c
 
 Backend tests use isolated local PostgreSQL and mocked provider boundaries; live GitHub OAuth/OpenAI credentials, deployment HTTPS/storage/backups and account-owner credential rotation remain operator setup.
 
-See [the 20-capability acceptance record and actual browser screenshots](docs/PORTFOLIO.md). Local Chrome QA also exercises real sign-in, CV saves, server assessment grading, share revocation and session restoration. `scripts/browser-qa.cjs` uses isolated Chrome and creates labelled QA accounts; configure its local API/web URLs and Playwright path before running it against a local instance.
+See [the fresh full audit, all 20 features and manual/visual expectations](docs/FULL-AUDIT-2026-10-05.md), and [the 20-capability acceptance record](docs/PORTFOLIO.md). Local Chrome QA also exercises real sign-in, CV saves, server assessment grading, share revocation and session restoration. `scripts/browser-qa.cjs` uses isolated Chrome and creates labelled QA accounts; configure its local API/web URLs and Playwright path before running it against a local instance.
 
 Follow [the full manual test guide](docs/MANUAL_TESTS.md) for exact startup commands, synthetic input generation, all 20 feature journeys, expected errors/privacy/persistence and the built Android artifact. The browser script refuses non-local targets. No live OAuth, native-device execution or hosted deployment is claimed.
 

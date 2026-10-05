@@ -1,6 +1,6 @@
 # Auctor: local release and manual UI tests
 
-This is the acceptance walkthrough for all 20 connected capabilities. Use labelled synthetic inputs and separate local accounts. The [acceptance record](PORTFOLIO.md) distinguishes implementation from actual automated/browser coverage; live provider consent, hosted deployment and native-device execution are not silently counted as complete. The companion API repository has `docs/MANUAL_TESTS.md` with PostgreSQL isolation and token ownership checks.
+This is the acceptance walkthrough for all 20 connected capabilities. Use labelled synthetic inputs and separate local accounts. The [fresh full audit](FULL-AUDIT-2026-10-05.md) and [acceptance record](PORTFOLIO.md) distinguishes implementation from actual automated/browser coverage; live provider consent, hosted deployment and native-device execution are not silently counted as complete. The companion API repository has `docs/MANUAL_TESTS.md` with PostgreSQL isolation and token ownership checks.
 
 ## Open the existing local release
 
@@ -63,8 +63,8 @@ Files appear in `D:\remaining-4-git-projs\auctor\Auctor-B-end-FastAPI\_data\manu
 ## Foundations: accounts, premium layout and preferences
 
 1. **New here? Create an account → Create private workspace** creates an owned empty workspace with score 0.0. Invalid handles/short passwords show validation; duplicates show a conflict. Wrong-password sign-in gives a generic credentials error. No other user's data appears.
-2. **Profile → Display name/Your story → Save profile**, reload: changes persist. Change **Appearance** between light/dark/system, and enable **Reduce motion/Reduce transparency**. Expected: stored account preferences survive refresh/sign-in; immediate transitions for reduced motion; opaque navigation for reduced transparency; system theme follows browser/OS preference.
-3. Inspect at 1440px and 390×844px with responsive browser tools. Expected: desktop rail becomes mobile dock; content/dialogs scroll without clipped controls; original A mark and readable champagne/pine/graphite surfaces appear in both themes. Resize an open dialog, keyboard-tab inputs and increase zoom. Native VoiceOver/TalkBack still needs a device pass.
+2. **Profile → Display name/Your story → Save profile**, reload: changes persist. Change **Appearance** between light/dark/system, and enable **Reduce motion/Reduce transparency/Increase contrast**. Expected: stored account preferences survive refresh/sign-in; immediate transitions for reduced motion; opaque navigation for reduced transparency, stronger edges and disabled blur for Increase contrast; system theme follows browser/OS preference.
+3. Inspect at 1440px and 390×844px with responsive browser tools. Expected: desktop rail becomes a horizontally scrollable mobile dock; content/dialogs scroll without clipped controls; original A mark and readable champagne/pine/graphite surfaces appear in both themes. Resize an open dialog, keyboard-tab inputs and increase zoom. Native VoiceOver/TalkBack still needs a device pass.
 4. Reload while signed in: session restores. **Sign out**, reload: landing screen remains and old API bearer token gives 401. A's CV/private files remain invisible to B.
 
 ## CV processing, provenance and versions (1–3)
