@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-06T06:35:14.261Z",
+  "checks": [
+    "Real owned sign-in and initially empty score/evidence",
+    "Native browser picker uploads labelled text PDF; real durable parser completes and marks claims unverified",
+    "Exact owner source download, editable unverified claims, visible version comparison and append-only restoration",
+    "Real damaged-PDF failure and Retry retain the previously saved CV without fabricated extraction",
+    "Experience submission and private PDF attachment remain pending without fabricated points",
+    "Actual coding JSON picker imports 150 claimed problems, digest and unverified provenance",
+    "Actual certificate form retains issuer/reference/date/source, honest pending review and zero formula-v1 points",
+    "All five real catalog tracks, visible Docker grading 5/5/+0.6, durable owned badge details and honest graph/roadmap projections",
+    "Visible source graph and roadmap launch the supported gap challenge through its actual control",
+    "Activity mark-read writes real account state",
+    "Durable formula-v1 input/score history opens actual component and evidence-change comparisons",
+    "Actual private-link create/revoke controls persist access state and public redaction",
+    "Discovery opt-in, public redaction and actual QR/link sheet rendering",
+    "Actual browser PDF/JSON export and embed controls produce parseable redacted reports and an opt-in SVG",
+    "Real opt-in search, candidate save/read-back and two-profile comparison",
+    "Motion/transparency/high-contrast preferences persist after actual reload",
+    "Missing OAuth reports a real unconfigured error and never verifies a username",
+    "Distinct reviewer UI loads real queue, records own synthetic evidence decision, persists +1.5 and audit (total 2.1 with earned badge)",
+    "Visible durable reviewer audit and real denied global-audit/private-proof requests enforce account ownership",
+    "Removing a zero-point reviewed certificate preserves issuer/source/reviewer/rationale audit and score history",
+    "Discovery opt-out removes public/search access; share revocation and privacy persist after reload",
+    "Real desktop/tablet/mobile and dark captures; zero browser page errors"
+  ],
+  "browserPageErrors": [],
+  "resumedPreviouslyCompletedChecks": 14,
+  "recordProvenance": "Clearly labelled generated local synthetic accounts and fixtures on the same final web build. Any resumed checks were completed earlier on this same generated owner, then the remaining controls ran after fresh real sign-in. Reviewer decision uses the actual separate-account UI. Live OAuth/provider calls were not performed.",
+  "webArtifactSHA256": "1652804630BE4698B1E6E2989CFF2CA92D3D560361C4C84963A99EF33B541B00",
+  "artifactScope": "Completed before final dock-only width correction; implementation/privacy/provider boundaries unchanged."
+}

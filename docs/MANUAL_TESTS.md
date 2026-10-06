@@ -6,7 +6,7 @@ This is the acceptance walkthrough for all 20 connected capabilities. Use labell
 
 Open **http://localhost:8041** in Chrome. The API is **http://localhost:8011**, with [OpenAPI](http://localhost:8011/docs) and [readiness](http://localhost:8011/health). Previews stay accessible while their local processes are running. The release bundle exists at `D:\remaining-4-git-projs\auctor\Auctor-F-end-Flutter\build\web`, compiled for those local origins. Do not publish this bundle: it intentionally targets localhost.
 
-The [74.96-second actual browser demo](demo/auctor-connected-workflow.webm) and [screenshots](PORTFOLIO.md#review-artifacts) show real UI/API operations with labelled QA data. [Final release metadata](RELEASE.md) records exact APK size/date/hash and passed results.
+The [74.96-second actual browser demo](demo/auctor-connected-workflow.webm) is historical October 3 evidence. The [full audit](FULL-AUDIT-2026-10-05.md) records the October 5/6 checks and fresh browser screenshots separately. [Release metadata](RELEASE.md) records exact APK size/date/hash and passed results.
 
 ## Restart from source
 
@@ -124,11 +124,11 @@ Open **Compare score signals** on a snapshot: actual total/component deltas and 
 
 ## Exports, QR and embed (20)
 
-**Profile → Download PDF report** creates a readable real PDF; **Export structured data** creates parseable JSON of A's record. Confirm selected download location; cancellation must not crash. **QR code** while discoverable encodes the copied public link (other devices cannot reach this computer through their own localhost). **Copy embed badge** supplies the public score SVG/link while opt-in is enabled. Disable discovery: badge API returns 404. Native picker/QR scanning needs separate device validation.
+**Profile → Download PDF report** creates a readable real PDF; **Export structured data** creates parseable JSON of A's record. Browser controls download a local Blob using the browser's download settings; native controls open a save picker, whose cancellation must not crash. Source/proof downloads use the same platform helper. **QR code** while discoverable encodes the copied public link (other devices cannot reach this computer through their own localhost). **Copy embed badge** supplies the public score SVG/link while opt-in is enabled. Disable discovery: badge API returns 404. Native picker/QR scanning needs separate device validation.
 
 ## Automated browser reproduction
 
-The script creates labelled local QA accounts/CVs and performs actual sign-in/edit/save/readback/Docker grading/private link create/revoke/redaction/session reload/mobile themes. It refuses non-local origins. New QA records remain in the configured schema; existing data is not removed.
+The fresh full-audit script creates labelled local synthetic accounts and performs native file selection, durable PDF parsing and failed retry, exact source download, CV edits/revisions, Docker grading, badge/graph/roadmap controls, score comparisons, proof/coding/certificate submission, separate reviewer decisions, audit/privacy enforcement, redacted exports, candidate comparison and responsive captures. It refuses non-local origins. New QA records remain in the configured schema; existing data is not removed. Live GitHub/repository statistics remain a consent gate; missing settings are checked explicitly.
 
 ```powershell
 Set-Location 'D:\remaining-4-git-projs\auctor\Auctor-F-end-Flutter'
@@ -138,14 +138,14 @@ $env:AUCTOR_PLAYWRIGHT='C:/Users/dell/.cache/codex-runtimes/codex-primary-runtim
 New-Item -ItemType Directory -Force -Path 'build/qa-temp' | Out-Null
 $env:TEMP='D:\remaining-4-git-projs\auctor\Auctor-F-end-Flutter\build\qa-temp'
 $env:TMP=$env:TEMP
-& 'C:\Program Files\nodejs\node.exe' scripts/browser-qa.cjs
+& 'C:\Program Files\nodejs\node.exe' scripts/full-audit-browser.cjs
 ```
 
-Expected: PASS and no browser page errors. Installed Chrome/Playwright are required; use your own module path on another machine. `AUCTOR_RECORD_VIDEO=1` records a fresh context and replaces the demo only on success. Test screenshots live in ignored `build/browser-qa`; tracked screenshots/video document the actual successful run.
+Expected: PASS and no browser page errors. Installed Chrome/Playwright are required; use your own module path on another machine. Fresh results/downloads/screenshots live in ignored `build/full-audit-2026-10-05`; the audit links copied tracked evidence. The older `scripts/browser-qa.cjs` retains the October 3 demo workflow and optional `AUCTOR_RECORD_VIDEO=1` behavior; it does not replace the historical video during this audit.
 
 ## Android artifact and other device gates
 
-Debug APK: **`D:\remaining-4-git-projs\auctor\Auctor-F-end-Flutter\build\app\outputs\apk\debug\app-debug.apk`** (181,162,967 bytes; built 2026-10-03, SHA-256 in [release record](RELEASE.md)). It targets emulator API `http://10.0.2.2:8011` and web/profile origin `http://10.0.2.2:8041`; debug allows HTTP, release requires HTTPS. Start both services on reachable testing interfaces as needed. A physical device needs a rebuild with the computer's LAN address; these emulator aliases will not work there.
+Debug APK: **`D:\remaining-4-git-projs\auctor\Auctor-F-end-Flutter\build\app\outputs\apk\debug\app-debug.apk`**. The [release record](RELEASE.md) and [full audit](FULL-AUDIT-2026-10-05.md) record the October 6 rebuild's exact size/date/hash separately from the October 3 artifact. It targets emulator API `http://10.0.2.2:8011` and web/profile origin `http://10.0.2.2:8041`; debug allows HTTP, release requires HTTPS. Start both services on reachable testing interfaces as needed. A physical device needs a rebuild with the computer's LAN address; these emulator aliases will not work there.
 
 Rebuild with JDK 21 (JDK 25 was incompatible with Gradle) using the verified direct command:
 
@@ -171,7 +171,7 @@ The supplied APK includes both emulator origins shown above, confirmed in its co
 
 ## Completed work and remaining gates
 
-Implemented: exact approved 20 capabilities plus branding/themes/authentication foundations, owned PostgreSQL jobs, truthful v1 scores, CI definitions, tests, JS bundle, Android debug build, screenshots/video and guides. **18 API tests and 8 standard Flutter tests passed**, including graph source → badge details. Two Node production guard tests and Bash syntax passed; final build/analyzer/browser results are recorded in the acceptance record. Remote CI execution is not claimed.
+Implemented: exact approved 20 capabilities plus branding/themes/authentication foundations, owned PostgreSQL jobs, truthful v1 scores, CI definitions, tests, JS bundle, Android debug build, screenshots/video and guides. **18 API tests passed on October 5 and 17 Flutter tests passed on October 6**, including graph source → badge details, six-destination layouts in both themes, large text, deadlines, offline sign-out and navigation semantics. Two Node production guard tests and Bash syntax passed; final build/analyzer/browser results are recorded in the full audit. Remote CI execution is not claimed.
 
 Hosting is deferred. Outstanding: live GitHub consent, optional paid AI parsing, production private-volume/backups, owner-controlled exposed-credential rotation, native devices/iOS signing. No fabricated outcomes replace these gates. [Deferred deployment notes](DEPLOYMENT.md) record exact legacy target references and safe future activation.
 

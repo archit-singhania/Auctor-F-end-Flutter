@@ -1,10 +1,17 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 
-Future<void> completeSave(String? path, Uint8List bytes) async {
-  // Mobile platform pickers write the bytes themselves; desktop returns a path.
-  if (path != null &&
-      (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+Future<void> saveReport(String name, Uint8List bytes) async {
+  final desktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+  final path = await FilePicker.platform.saveFile(
+      dialogTitle: 'Save Auctor report',
+      fileName: name,
+      type: FileType.custom,
+      allowedExtensions: [name.split('.').last],
+      bytes: desktop ? null : bytes);
+  // Mobile pickers write the bytes; desktop pickers return the chosen path.
+  if (path != null && desktop) {
     await File(path).writeAsBytes(bytes, flush: true);
   }
 }

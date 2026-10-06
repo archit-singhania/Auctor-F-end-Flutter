@@ -10,7 +10,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'controller.dart';
 import 'liquid_glass.dart';
 import 'package:flutter/foundation.dart';
-import 'save_stub.dart' if (dart.library.io) 'save_io.dart';
+import 'save_stub.dart'
+    if (dart.library.io) 'save_io.dart'
+    if (dart.library.js_interop) 'save_web.dart';
 
 final workspaceProvider =
     ChangeNotifierProvider<WorkspaceController>((ref) => WorkspaceController());
@@ -808,7 +810,9 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
                         child: Row(children: [
                           for (final item in nav.asMap().entries)
                             SizedBox(
-                                width: 78,
+                                width: 88 *
+                                    MediaQuery.textScalerOf(context).scale(11) /
+                                    11,
                                 child: GlassDestination(
                                     compact: true,
                                     label: item.value.$1,
@@ -1398,13 +1402,7 @@ Future<void> openLink(String value) async {
 
 Future<void> download(PlatformApi api, String path, String name) async {
   final bytes = await api.bytes(path);
-  final destination = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save Auctor report',
-      fileName: name,
-      type: FileType.custom,
-      allowedExtensions: [name.split('.').last],
-      bytes: bytes);
-  await completeSave(destination, bytes);
+  await saveReport(name, bytes);
 }
 
 class EvidencePane extends ConsumerWidget {

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-06T06:42:15.299Z",
+  "checks": [
+    "390 px light: Overview reached through the real scrollable dock",
+    "390 px light: Evidence reached through the real scrollable dock",
+    "390 px light: Challenges reached through the real scrollable dock",
+    "390 px light: Activity reached through the real scrollable dock",
+    "390 px light: Discover reached through the real scrollable dock",
+    "390 px light: Profile reached through the real scrollable dock",
+    "390 px dark: Overview reached through the real scrollable dock",
+    "390 px dark: Evidence reached through the real scrollable dock",
+    "390 px dark: Challenges reached through the real scrollable dock",
+    "390 px dark: Activity reached through the real scrollable dock",
+    "390 px dark: Discover reached through the real scrollable dock",
+    "390 px dark: Profile reached through the real scrollable dock",
+    "Final desktop light/dark and tablet captures"
+  ],
+  "browserPageErrors": [],
+  "blockedExternalOrigins": [
+    "https://fonts.gstatic.com"
+  ],
+  "bundledAssets": [
+    {
+      "path": "/canvaskit/chromium/canvaskit.wasm",
+      "status": 200
+    },
+    {
+      "path": "/assets/assets/fonts/Inter.ttf",
+      "status": 200
+    }
+  ],
+  "provenance": "Same labelled generated full-audit account, final dock-only web rebuild. Actual UI sign-in and all six mobile destinations in both themes; every external HTTP origin blocked. Flutter may attempt its built-in Google font fallback; this blocked attempt is recorded separately from the successfully served local Inter/CanvasKit and readable capture verification."
+}

@@ -1,4 +1,4 @@
-# Auctor — full local audit, 2026-10-05
+# Auctor — full local audit, started 2026-10-05; completed 2026-10-06
 
 Auctor is an owned developer-evidence workspace: Flutter web/mobile UI, FastAPI, PostgreSQL, private PDF storage and a durable extraction worker. All 20 approved capabilities have connected implementations. This audit verifies local software behavior and distinguishes external consent/device acceptance from implementation.
 
@@ -11,6 +11,8 @@ Auctor is an owned developer-evidence workspace: Flutter web/mobile UI, FastAPI,
 - Bundled the licensed Inter font and CanvasKit engine locally so startup does not need a font/engine CDN. The original Auctor provenance mark and platform exports remain consistent.
 - Fixed a response that sends HTTP headers then stalls: the complete JSON body has a deadline. Disposed controllers no longer notify listeners after asynchronous responses. Offline sign-out clears private local state and explicitly reports that server revocation could not be reached.
 - Bounded appearance payloads and validated accessibility flags on the server. Preferences cannot silently treat the text `"true"` as a boolean.
+- The actual browser continuation found that the installed file picker does not implement web `saveFile`. Source/proof and PDF/JSON reports now use a private local Blob download in browsers; native platforms retain their save picker. Desktop writes use its returned path, while mobile pickers write the supplied bytes. No bearer token is put in a download URL.
+- Removed duplicate navigation announcements caused by the tooltip and visible label both entering accessibility semantics. A regression verifies the label is announced once and the control remains actionable.
 
 The design uses the requested [Liquid Glass Design gallery](https://liquidglassdesign.com/), [guide](https://liquidglassdesign.com/guide), and [prompt library](https://liquidglassdesign.com/prompts) as visual references. An original implementation applies their restrained floating controls and soft lighting; no gallery assets are copied. It follows [Apple material guidance](https://developer.apple.com/design/human-interface-guidelines/materials) by keeping glass in the interaction layer. Flutter uses a clipped [BackdropFilter](https://api.flutter.dev/flutter/widgets/BackdropFilter-class.html), rather than claiming Apple's native optical refraction.
 
@@ -96,3 +98,27 @@ Live GitHub OAuth consent, optional paid parsing, physical Android/iOS execution
 ## Evidence and artifacts
 
 Fresh numerical results, screenshots and artifact fingerprints below are recorded from completed checks on this source. Historical October 3 videos in `docs/demo` remain labelled with their original date; the fresh captures are linked separately.
+
+| Check | Completed result and date |
+|---|---|
+| PostgreSQL/API tests | **18 passed in 72.72 s**, October 5. Reused the completed run; only the generated isolated schema and temporary private files were removed. |
+| Maintained Flutter analysis | `flutter analyze --no-pub lib test`: **No issues found**, 14.3 s, October 6. |
+| Flutter regression suite | **17 passed**, October 6. The prior October 5 run had 16; the new test verifies one accessible navigation label and an actionable control. |
+| JavaScript web release | **Built successfully in 49.4 s**, October 6, using the local 8011/8041 origins, bundled Inter and bundled CanvasKit. The earlier October 5 build completed in 166.6 s before the browser export correction. |
+| Android debug | **JDK 21 build successful in 44 s**, 236 tasks (28 executed, 208 up-to-date), October 6. The initial JDK 25 attempt failed; no global Java/Flutter settings were changed. Both emulator origins were verified in the final APK's compiled assets. |
+| Production guards | **2 Node tests and Bash syntax passed** in the completed October 5 verification; no production activation occurred. |
+| Actual Chrome workflows | **22 groups passed, zero page errors**, including 14 previously completed groups resumed for the same generated account. See [workflow results](full-audit-browser-results-2026-10-06.json). |
+| Final Chrome layout | **13 groups passed, zero page errors**: all six 390 px destinations in both themes, plus desktop/tablet. See [final layout results](full-audit-layout-results-2026-10-06.json). |
+
+| Current artifact | Bytes | Last write UTC | SHA-256 |
+|---|---:|---|---|
+| `build/app/outputs/apk/debug/app-debug.apk` | 181,175,267 | 2026-10-06T06:39:19.3254527Z | `07DFE64A25B95D69B823CD3EF0235016FB608BEA20C14AD0D0B64BB5E9267E1D` |
+| `build/web/main.dart.js` | 3,064,304 | 2026-10-06T06:37:49.8018054Z | `C289C7A97AE4F0E3D0700D378AECC2DCF4E107A5DD0D6A78A04BBD3CE904BF75` |
+
+The builds retain upstream Cupertino-font/tree-shaking and Gradle/Kotlin deprecation notices. The maintained analysis and tests pass; these notices are not presented as native-device validation. JavaScript is the verified web target. The local web release is a review artifact; the Android debug artifact targets the emulator aliases documented above. Neither is a public deployment bundle.
+
+The full 22-group workflow used the preceding bundle SHA-256 `1652804630BE4698B1E6E2989CFF2CA92D3D560361C4C84963A99EF33B541B00`. A final dock-width correction kept the mobile Challenges label on one line; the final source then passed the analyzer, 17 tests, both builds and the targeted 13-group layout check. Workflow/backend behavior was unchanged, so the completed full journey was reused.
+
+Every external HTTP origin was blocked during the final layout check. Flutter attempted its built-in fallback at `fonts.gstatic.com`; the blocked attempt is recorded separately from local Inter and CanvasKit, which returned HTTP 200. The final captures show readable labels in both themes. Reproduce with `scripts/full-audit-browser.cjs` and `scripts/full-audit-layout.cjs`; [final metadata](full-audit-metadata-2026-10-06.json) records exact artifact and curated screenshot fingerprints.
+
+The stable [October 6 screenshot folder](screenshots/full-audit-2026-10-06) contains 28 curated captures: 13 workflow captures from the preceding bundle and 15 layout captures from the final bundle. Inspect the final [desktop overview](screenshots/full-audit-2026-10-06/overview-glass-desktop.png), [dark desktop](screenshots/full-audit-2026-10-06/overview-glass-desktop-dark.png), [light mobile dock](screenshots/full-audit-2026-10-06/mobile-light-overview.png), [dark mobile dock](screenshots/full-audit-2026-10-06/mobile-dark-overview.png) and [tablet](screenshots/full-audit-2026-10-06/overview-768.png). Workflow evidence includes [CV comparison](screenshots/full-audit-2026-10-06/cv-version-comparison.png), [server grading](screenshots/full-audit-2026-10-06/server-graded-docker.png), [candidate comparison](screenshots/full-audit-2026-10-06/candidate-comparison.png) and [owner review audit](screenshots/full-audit-2026-10-06/owner-review-audit.png). Transient failure captures remain only in ignored logs.

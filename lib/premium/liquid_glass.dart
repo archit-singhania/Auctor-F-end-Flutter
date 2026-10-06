@@ -151,6 +151,7 @@ class GlassDestination extends StatelessWidget {
       button: true,
       child: Tooltip(
         message: label,
+        excludeFromSemantics: true,
         child: AnimatedContainer(
           duration: MediaQuery.disableAnimationsOf(context)
               ? Duration.zero

@@ -20,6 +20,26 @@ class StalledBodyClient extends http.BaseClient {
 }
 
 void main() {
+  testWidgets('Navigation announces its label once and remains actionable',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      var tapped = false;
+      await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+              body: GlassDestination(
+                  label: 'Evidence',
+                  icon: Icons.layers_outlined,
+                  selected: true,
+                  onTap: () => tapped = true))));
+      expect(find.bySemanticsLabel('Evidence'), findsOneWidget);
+      expect(find.bySemanticsLabel('Evidence Evidence'), findsNothing);
+      await tester.tap(find.text('Evidence'));
+      expect(tapped, isTrue);
+    } finally {
+      semantics.dispose();
+    }
+  });
   for (final size in [const Size(390, 844), const Size(1440, 1000)]) {
     for (final mode in [ThemeMode.light, ThemeMode.dark]) {
       testWidgets('All evidence destinations use readable glass at $size/$mode',

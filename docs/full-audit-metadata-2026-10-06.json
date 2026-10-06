@@ -1,0 +1,277 @@
+{
+  "date": "2026-10-06",
+  "checks": {
+    "backend": {
+      "passed": 18,
+      "seconds": 72.72,
+      "date": "2026-10-05",
+      "reused": true
+    },
+    "flutter": {
+      "passed": 17,
+      "date": "2026-10-06"
+    },
+    "analyzer": {
+      "result": "No issues found",
+      "seconds": 14.3,
+      "scope": "lib test"
+    },
+    "web": {
+      "result": "success",
+      "seconds": 49.4
+    },
+    "android": {
+      "result": "success",
+      "seconds": 44,
+      "tasks": 236,
+      "executed": 28,
+      "upToDate": 208,
+      "jdk": "21"
+    },
+    "deploymentGuards": {
+      "passed": 2,
+      "bashSyntax": true,
+      "date": "2026-10-05",
+      "reused": true
+    },
+    "browserWorkflow": {
+      "passedGroups": 22,
+      "resumedPreviouslyCompletedGroups": 14,
+      "pageErrors": 0,
+      "webSHA256": "1652804630BE4698B1E6E2989CFF2CA92D3D560361C4C84963A99EF33B541B00",
+      "scope": "Completed before final dock-only width correction; implementation/privacy/provider boundaries unchanged."
+    },
+    "browserFinalLayout": {
+      "passedGroups": 13,
+      "pageErrors": 0,
+      "date": "2026-10-06",
+      "webSHA256": "C289C7A97AE4F0E3D0700D378AECC2DCF4E107A5DD0D6A78A04BBD3CE904BF75",
+      "allExternalHttpBlocked": true,
+      "blockedExternalOrigins": [
+        "https://fonts.gstatic.com"
+      ],
+      "bundledAssets": [
+        {
+          "path": "/canvaskit/chromium/canvaskit.wasm",
+          "status": 200
+        },
+        {
+          "path": "/assets/assets/fonts/Inter.ttf",
+          "status": 200
+        }
+      ],
+      "scope": "Same labelled generated full-audit account, final dock-only web rebuild. Actual UI sign-in and all six mobile destinations in both themes; every external HTTP origin blocked. Flutter may attempt its built-in Google font fallback; this blocked attempt is recorded separately from the successfully served local Inter/CanvasKit and readable capture verification.",
+      "results": "full-audit-layout-results-2026-10-06.json"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "D:\\remaining-4-git-projs\\auctor\\Auctor-F-end-Flutter\\build\\app\\outputs\\apk\\debug\\app-debug.apk",
+      "bytes": 181175267,
+      "lastWriteUtc": "2026-10-06T12:09:19.325453+05:30",
+      "sha256": "07DFE64A25B95D69B823CD3EF0235016FB608BEA20C14AD0D0B64BB5E9267E1D"
+    },
+    {
+      "path": "D:\\remaining-4-git-projs\\auctor\\Auctor-F-end-Flutter\\build\\web\\main.dart.js",
+      "bytes": 3064304,
+      "lastWriteUtc": "2026-10-06T12:07:49.801805+05:30",
+      "sha256": "C289C7A97AE4F0E3D0700D378AECC2DCF4E107A5DD0D6A78A04BBD3CE904BF75"
+    }
+  ],
+  "origins": {
+    "webAPI": "http://localhost:8011",
+    "webProfile": "http://localhost:8041",
+    "androidAPI": "http://10.0.2.2:8011",
+    "androidProfile": "http://10.0.2.2:8041"
+  },
+  "acceptanceGates": [
+    "personal GitHub OAuth consent and live owned-repository statistics",
+    "optional paid parsing",
+    "physical Android/iOS and platform accessibility/picker/QR execution",
+    "public HTTPS hosting/private persistent volume/backups",
+    "account-owner credential rotation",
+    "remote CI/iOS signing"
+  ],
+  "dataPreserved": [
+    "ordinary PostgreSQL records",
+    "_data",
+    "private .env.local"
+  ],
+  "historicalDemo": "October 3 video and top-level screenshots retained with original provenance",
+  "screenshots": {
+    "count": 28,
+    "finalLayoutCount": 15,
+    "workflowCount": 13,
+    "folder": "screenshots/full-audit-2026-10-06",
+    "files": [
+      {
+        "path": "screenshots/full-audit-2026-10-06/activity-persisted.png",
+        "bytes": 351286,
+        "sha256": "302212D030A51BD35308B7069217FA2E72094BC2E28A95FEE14A19391A64FDC1",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/candidate-comparison.png",
+        "bytes": 528137,
+        "sha256": "C431D1DD3B10DC927126A9B1F87C15A6D9BC558B6E40899FBB91DF0F1DDE839C",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/certificate-issuer-sheet.png",
+        "bytes": 369859,
+        "sha256": "2659A88985DF186974AB3AFC33BCE254B181A20D742DAE8B64689C686AE6E4B4",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/cv-review-glass-sheet.png",
+        "bytes": 385796,
+        "sha256": "B81ECDC6DFC940F22241B81724CDAA8BAA981040F5C3921ED1D6160BC5ADA497",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/cv-version-comparison.png",
+        "bytes": 423785,
+        "sha256": "67B877532EE1D25087D2184CD01DFB3415A59C57829A7337CA296E1F410B8350",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/evidence-text-pdf.png",
+        "bytes": 397293,
+        "sha256": "5809690F7F476142414ABEBE22F288EB23B5CEDAE59D79C216343219A9336FEE",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-dark-activity.png",
+        "bytes": 131209,
+        "sha256": "3FDEA7BC0C20645A500F153691652AF4A281E0CA3C59EB2B2FF86D022F595DBB",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-dark-challenges.png",
+        "bytes": 116435,
+        "sha256": "85E034C0ADA994D176CB5F2DFD4DC533AB2CD0D1DB62E57D48F5B46F5F4B32F0",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-dark-discover.png",
+        "bytes": 118698,
+        "sha256": "A68A5A34E988C4B95505C7A9F9B377CB518C0DEA5477A7F745DF070E2A42150E",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-dark-evidence.png",
+        "bytes": 122534,
+        "sha256": "93AD7A2E43C94815C7A064B8767035A10B0C50E81EB15622865B144156DFA84A",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-dark-overview.png",
+        "bytes": 114348,
+        "sha256": "42E33A2F6F5F3BC426E5C2D8C43EE1F61CBE6BAFE025DBB68F6EE66785AAD91E",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-dark-profile.png",
+        "bytes": 115930,
+        "sha256": "CAEF80FD7DC937A137134D872D8582B71B0B757E28BF3994CCF56DF9EE4A02CF",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-light-activity.png",
+        "bytes": 137781,
+        "sha256": "6720583C8D3382AF71907D42DD43BBF84738DC293F43F1CA6BFAC4560B11395D",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-light-challenges.png",
+        "bytes": 125192,
+        "sha256": "CC664BD8057C7BDEC744A8AC009C84FDF12AE6B067D8B7A2D2E1853DC04C75E1",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-light-discover.png",
+        "bytes": 126802,
+        "sha256": "24E33F16880E47A75B53B4EAEDE01CAE4F4A81083BFFD5C26F3F72ECF86BDC83",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-light-evidence.png",
+        "bytes": 131569,
+        "sha256": "4BD82EFFB90A401EF2A216334812E7DC15EB1F5E48AAAE60C950B871D4C9AFEB",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-light-overview.png",
+        "bytes": 122365,
+        "sha256": "DB9EA906C0DA80952102D8839E3A5CBA16AED0ACAB43D126EAEE406F805C2C82",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/mobile-light-profile.png",
+        "bytes": 124158,
+        "sha256": "F43E9D8E71D5D525ABC86CC4E300A628C1020D4C41806E502DA0146FBD513DEF",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/overview-768.png",
+        "bytes": 210374,
+        "sha256": "85DC30546CC5DE28CD28629101220B90BB5B45338B4F79B8CC5B273F7078C433",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/overview-glass-desktop-dark.png",
+        "bytes": 441222,
+        "sha256": "6229284FB43434CD91773E65D4DAA40513929BB9BDCD63FE7E73D731A85C9852",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/overview-glass-desktop.png",
+        "bytes": 454611,
+        "sha256": "C4C8F30B3A79AFA070AD7B0F60775AF7AB6A7FC1BFC73D4AB3DE6625EC5954FB",
+        "scope": "final layout bundle"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/owned-badge-detail.png",
+        "bytes": 513972,
+        "sha256": "C624E0BF04BFEC7E68416B949B2BA9737D1C71010E321F70D1EDB49E6D26F45C",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/owner-review-audit.png",
+        "bytes": 308251,
+        "sha256": "73548A8B78D1D02D9B10A03DE41A69F5DD1606E97755B2DE938F760DC8D41237",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/profile-qr-sheet.png",
+        "bytes": 321281,
+        "sha256": "EFF399FA7C48F09264F1F077E7702EBBD0EE298BC93425711AEA77B7308B05CD",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/reviewer-workspace.png",
+        "bytes": 484005,
+        "sha256": "338E86DD56CF227B2050437D4B7081EB5EB4C86FD323AC3A26A938EEBC30E9AD",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/score-evidence-comparison.png",
+        "bytes": 407254,
+        "sha256": "DB2BB4139B96424586C4F8C9F935289BF6C6FA2094DDECFC350FFADD160BACA0",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/server-graded-docker.png",
+        "bytes": 463036,
+        "sha256": "54417664AC0A25149EB96197BA520B395D8D3370F5E567C121B40A26683A0C43",
+        "scope": "full workflow preceding dock-only correction"
+      },
+      {
+        "path": "screenshots/full-audit-2026-10-06/skills-graph-roadmap.png",
+        "bytes": 426552,
+        "sha256": "742D59E0D42A00369634C867F571B5A85E57D85D8FFE5657F69AFEF99C27FF3C",
+        "scope": "full workflow preceding dock-only correction"
+      }
+    ]
+  }
+}
