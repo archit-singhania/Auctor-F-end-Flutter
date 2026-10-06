@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'controller.dart';
 import 'liquid_glass.dart';
 import 'visual_theme.dart';
+import 'proof_motion.dart';
 import 'package:flutter/foundation.dart';
 import 'save_stub.dart'
     if (dart.library.io) 'save_io.dart'
@@ -31,16 +32,30 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
   void initState() {
     super.initState();
     router = GoRouter(routes: [
-      GoRoute(path: '/', builder: (_, __) => const EntryPage()),
-      GoRoute(path: '/workspace', builder: (_, __) => const EntryPage()),
+      GoRoute(
+          path: '/',
+          pageBuilder: (context, state) =>
+              proofPage(context, state, const EntryPage())),
+      GoRoute(
+          path: '/workspace',
+          pageBuilder: (context, state) =>
+              proofPage(context, state, const EntryPage())),
       GoRoute(
           path: '/public/:handle',
-          builder: (_, s) =>
-              PublicPage(path: '/public/${s.pathParameters['handle']}')),
+          pageBuilder: (context, s) => proofPage(
+              context,
+              s,
+              PublicPage(
+                  key: ValueKey(s.pathParameters['handle']),
+                  path: '/public/${s.pathParameters['handle']}'))),
       GoRoute(
           path: '/share/:token',
-          builder: (_, s) =>
-              PublicPage(path: '/share/${s.pathParameters['token']}')),
+          pageBuilder: (context, s) => proofPage(
+              context,
+              s,
+              PublicPage(
+                  key: ValueKey(s.pathParameters['token']),
+                  path: '/share/${s.pathParameters['token']}'))),
       for (final old in [
         'home',
         'dashboard',
@@ -65,11 +80,20 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
     return MaterialApp.router(
         title: 'Auctor · Proof of your craft',
         debugShowCheckedModeBanner: false,
-        theme: theme(Brightness.light, highContrast: c.highContrast),
-        darkTheme: theme(Brightness.dark, highContrast: c.highContrast),
-        highContrastTheme: theme(Brightness.light, highContrast: true),
-        highContrastDarkTheme: theme(Brightness.dark, highContrast: true),
+        theme: theme(Brightness.light,
+            highContrast: c.highContrast, edition: c.edition),
+        darkTheme: theme(Brightness.dark,
+            highContrast: c.highContrast, edition: c.edition),
+        highContrastTheme:
+            theme(Brightness.light, highContrast: true, edition: c.edition),
+        highContrastDarkTheme:
+            theme(Brightness.dark, highContrast: true, edition: c.edition),
         themeMode: c.theme,
+        themeAnimationDuration: c.reducedMotion ||
+                WidgetsBinding.instance.platformDispatcher.accessibilityFeatures
+                    .disableAnimations
+            ? Duration.zero
+            : ProofMotion.response,
         routerConfig: router,
         builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(
@@ -81,8 +105,26 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
   }
 }
 
-ThemeData theme(Brightness brightness, {bool highContrast = false}) =>
-    auctorTheme(brightness, highContrast: highContrast);
+CustomTransitionPage<void> proofPage(
+        BuildContext context, GoRouterState state, Widget child) =>
+    CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: child,
+        transitionDuration: ProofMotion.duration(context),
+        reverseTransitionDuration:
+            ProofMotion.duration(context, ProofMotion.response),
+        transitionsBuilder: (context, animation, secondary, child) =>
+            MediaQuery.disableAnimationsOf(context)
+                ? child
+                : FadeTransition(
+                    opacity:
+                        animation.drive(CurveTween(curve: ProofMotion.curve)),
+                    child: child));
+
+ThemeData theme(Brightness brightness,
+        {bool highContrast = false,
+        AuctorEdition edition = AuctorEdition.atelier}) =>
+    auctorTheme(brightness, highContrast: highContrast, edition: edition);
 
 class AuctorMark extends StatelessWidget {
   final double size;
@@ -139,10 +181,12 @@ class Surface extends ConsumerWidget {
   final Widget child;
   final bool glass;
   final EdgeInsets padding;
+  final int motionOrder;
   const Surface(
       {super.key,
       required this.child,
       this.glass = false,
+      this.motionOrder = 0,
       this.padding = const EdgeInsets.all(24)});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -177,7 +221,7 @@ class Surface extends ConsumerWidget {
                   offset: const Offset(0, 14))
             ]),
         child: Material(type: MaterialType.transparency, child: child));
-    return content;
+    return ProofReveal(order: motionOrder, child: content);
   }
 }
 
@@ -240,6 +284,7 @@ class Backdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final scheme = Theme.of(context).colorScheme;
     return Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -248,12 +293,14 @@ class Backdrop extends StatelessWidget {
                 colors: dark
                     ? [
                         const Color(0xff11191f),
-                        const Color(0xff192d2f),
+                        Color.lerp(
+                            const Color(0xff11191f), scheme.primary, .1)!,
                         const Color(0xff2a2728)
                       ]
                     : [
                         const Color(0xfff4f1eb),
-                        const Color(0xffe6eeec),
+                        Color.lerp(
+                            AuctorPalette.pearl, scheme.primaryContainer, .6)!,
                         const Color(0xfff3e8da)
                       ])),
         child: child);
@@ -615,15 +662,6 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
     final nav =
         destinations.take(c.profile['role'] == 'reviewer' ? 7 : 6).toList();
     final current = c.destination < nav.length ? c.destination : 0;
-    final page = switch (current) {
-      0 => const OverviewPane(),
-      1 => const EvidencePane(),
-      2 => const ChallengesPane(),
-      3 => const ActivityPane(),
-      4 => const DiscoverPane(),
-      5 => const ProfilePane(),
-      _ => const ReviewsPane()
-    };
     return Scaffold(body:
         Backdrop(child: SafeArea(child: LayoutBuilder(builder: (context, box) {
       final wide = box.maxWidth >= 1000;
@@ -742,21 +780,8 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
                         : Row(children: [Expanded(child: title), actions]);
                   }))),
           Expanded(
-              child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(wide ? 12 : 20, 8, 24, 32),
-                  child: Center(
-                      child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1200),
-                          child: Column(children: [
-                            if (c.error != null) ErrorNotice(c.error!),
-                            AnimatedSwitcher(
-                                duration:
-                                    MediaQuery.of(context).disableAnimations
-                                        ? Duration.zero
-                                        : const Duration(milliseconds: 260),
-                                child: KeyedSubtree(
-                                    key: ValueKey(current), child: page))
-                          ]))))),
+              child:
+                  _WorkspaceDeck(current: current, wide: wide, error: c.error)),
           if (!wide)
             Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
@@ -782,6 +807,69 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
         ]))
       ]);
     }))));
+  }
+}
+
+/// Panes mount on first visit and retain form/filter/scroll identity thereafter.
+class _WorkspaceDeck extends StatefulWidget {
+  final int current;
+  final bool wide;
+  final String? error;
+  const _WorkspaceDeck({required this.current, required this.wide, this.error});
+  @override
+  State<_WorkspaceDeck> createState() => _WorkspaceDeckState();
+}
+
+class _WorkspaceDeckState extends State<_WorkspaceDeck> {
+  final visited = <int>{};
+  final bucket = PageStorageBucket();
+  Widget pane(int index) => switch (index) {
+        0 => const OverviewPane(),
+        1 => const EvidencePane(),
+        2 => const ChallengesPane(),
+        3 => const ActivityPane(),
+        4 => const DiscoverPane(),
+        5 => const ProfilePane(),
+        _ => const ReviewsPane(),
+      };
+  @override
+  Widget build(BuildContext context) {
+    visited.add(widget.current);
+    return PageStorage(
+        bucket: bucket,
+        child: Stack(children: [
+          for (final index in visited.toList()..sort())
+            Positioned.fill(
+                key: ValueKey('destination-$index'),
+                child: Offstage(
+                  offstage: index != widget.current,
+                  child: TickerMode(
+                      enabled: index == widget.current,
+                      child: ExcludeFocus(
+                        excluding: index != widget.current,
+                        child: ProofReveal(
+                            active: index == widget.current,
+                            child: SingleChildScrollView(
+                              key: PageStorageKey('destination-scroll-$index'),
+                              padding: EdgeInsets.fromLTRB(
+                                  widget.wide ? 12 : 20, 8, 24, 32),
+                              child: Center(
+                                  child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 1200),
+                                child: Column(children: [
+                                  if (widget.error != null &&
+                                      index == widget.current)
+                                    ErrorNotice(widget.error!),
+                                  KeyedSubtree(
+                                      key: ValueKey('pane-body-$index'),
+                                      child: pane(index)),
+                                ]),
+                              )),
+                            )),
+                      )),
+                )),
+        ]));
   }
 }
 
@@ -872,23 +960,31 @@ class OverviewPane extends ConsumerWidget {
             height: 150,
             child: Stack(alignment: Alignment.center, children: [
               SizedBox.expand(
-                  child: CircularProgressIndicator(
-                      value: score / 10,
-                      strokeWidth: 9,
-                      strokeCap: StrokeCap.round,
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withValues(alpha: .18),
-                      color: Theme.of(context).colorScheme.secondary)),
+                  child: TweenAnimationBuilder<double>(
+                      tween: Tween(end: score / 10),
+                      duration: ProofMotion.duration(context),
+                      curve: ProofMotion.curve,
+                      builder: (context, value, child) =>
+                          CircularProgressIndicator(
+                              value: value,
+                              strokeWidth: 9,
+                              strokeCap: StrokeCap.round,
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: .18),
+                              color: Theme.of(context).colorScheme.secondary))),
               Padding(
                   padding: const EdgeInsets.all(20),
                   child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Text(score.toStringAsFixed(1),
-                            style: const TextStyle(
-                                fontSize: 38, fontWeight: FontWeight.w500)),
+                        ProofState(
+                            identity: score,
+                            child: Text(score.toStringAsFixed(1),
+                                style: const TextStyle(
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w500))),
                         const Text('OUT OF 10',
                             style: TextStyle(fontSize: 9, letterSpacing: 2))
                       ]))),
@@ -924,34 +1020,36 @@ class OverviewPane extends ConsumerWidget {
                   ]));
 
         final breakdown = Surface(
+            motionOrder: 1,
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('What contributes',
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 16),
-          for (final entry in components.entries)
-            Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(children: [
-                  SizedBox(width: 86, child: Text(entry.key)),
-                  Expanded(
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                              value:
-                                  (entry.value['fraction'] as num).toDouble(),
-                              minHeight: 6,
-                              color: Theme.of(context).colorScheme.secondary,
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .secondary
-                                  .withValues(alpha: .15)))),
-                  const SizedBox(width: 12),
-                  Text(
-                      '${entry.value['points']} / ${(entry.value['weight'] as num) * 10}',
-                      style: const TextStyle(fontSize: 11))
-                ]))
-        ]));
+              const Text('What contributes',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 16),
+              for (final entry in components.entries)
+                Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(children: [
+                      SizedBox(width: 86, child: Text(entry.key)),
+                      Expanded(
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                  value: (entry.value['fraction'] as num)
+                                      .toDouble(),
+                                  minHeight: 6,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  backgroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .secondary
+                                      .withValues(alpha: .15)))),
+                      const SizedBox(width: 12),
+                      Text(
+                          '${entry.value['points']} / ${(entry.value['weight'] as num) * 10}',
+                          style: const TextStyle(fontSize: 11))
+                    ]))
+            ]));
         return box.maxWidth > 750
             ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(child: summary),
@@ -1060,7 +1158,7 @@ List<Map<String, dynamic>> insightItems(WorkspaceController c, String key,
 
 Future<void> showBadgeDetails(
         BuildContext context, WorkspaceController c, String id) =>
-    showDialog<void>(
+    showAuctorDialog<void>(
         context: context,
         builder: (_) => BadgeDetailsDialog(api: c.api, id: id));
 
@@ -1177,7 +1275,7 @@ class SkillRoadmapPane extends StatelessWidget {
                     Chip(label: Text(step['status'])),
                     if (step['track_id'] != null)
                       TextButton(
-                          onPressed: () => showDialog<void>(
+                          onPressed: () => showAuctorDialog<void>(
                               context: context,
                               builder: (_) => ChallengeDialog(
                                   api: controller.api,
@@ -1403,7 +1501,7 @@ class EvidencePane extends ConsumerWidget {
               style: TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           TextButton.icon(
-              onPressed: () => showDialog(
+              onPressed: () => showAuctorDialog(
                   context: context,
                   builder: (_) => CvEditor(
                       data: c.cv,
@@ -1492,7 +1590,7 @@ class EvidencePane extends ConsumerWidget {
           subtitle:
               'Evidence is verified by ownership or an independent review.',
           trailing: FilledButton.tonalIcon(
-              onPressed: () => showDialog(
+              onPressed: () => showAuctorDialog(
                   context: context,
                   builder: (_) => EvidenceEditor(controller: c)),
               icon: const Icon(Icons.add),
@@ -1521,62 +1619,71 @@ class EvidencePane extends ConsumerWidget {
           style: TextStyle(fontSize: 12, height: 1.5)),
       for (final e in c.list('evidence'))
         Padding(
+            key: ValueKey('evidence-${e['id']}'),
             padding: const EdgeInsets.only(bottom: 12),
             child: Surface(
+                motionOrder: c
+                    .list('evidence')
+                    .indexWhere((row) => row['id'] == e['id']),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  Row(children: [
-                    Expanded(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                          Text(e['title'],
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w600)),
-                          Text('${e['kind']} · ${dateLabel(e['updated_at'])}')
-                        ])),
-                    Chip(label: Text(e['status']))
-                  ]),
-                  if (e['kind'] == 'coding')
-                    Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                            'Claimed solved count: ${e['detail']['solved']}\n${e['detail']['import_method'] ?? 'Manual claim; independent review required'}',
-                            style: const TextStyle(fontSize: 12, height: 1.5))),
-                  if ((e['review_note'] ?? '').toString().isNotEmpty)
-                    Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text('Review: ${e['review_note']}')),
-                  if (e['kind'] == 'certificate')
-                    Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                            'Issuer: ${e['detail']['issuer'] ?? 'Not supplied'} · Reference: ${e['detail']['reference'] ?? 'Not supplied'}\nIssued: ${e['detail']['issued_on'] ?? 'Not supplied'}')),
-                  Wrap(spacing: 8, children: [
-                    if ((e['url'] ?? '').toString().isNotEmpty)
-                      TextButton.icon(
-                          onPressed: () => c.run(() => openLink(e['url'])),
-                          icon: const Icon(Icons.open_in_new, size: 16),
-                          label: const Text('Source')),
-                    if (!['project', 'github'].contains(e['kind']) &&
-                        e['status'] != 'verified')
-                      TextButton.icon(
-                          onPressed: () => attachProof(c, e['id']),
-                          icon:
-                              const Icon(Icons.upload_file_outlined, size: 16),
-                          label: const Text('Attach PDF proof')),
-                    if (e['has_file'] == true)
-                      TextButton.icon(
-                          onPressed: () => c.run(() => download(c.api,
-                              '/evidence/${e['id']}/file', 'evidence.pdf')),
-                          icon: const Icon(Icons.download, size: 16),
-                          label: const Text('Download proof')),
-                    TextButton(
-                        onPressed: () => confirmDelete(context, c, e),
-                        child: const Text('Remove'))
-                  ])
-                ]))),
+                      Row(children: [
+                        Expanded(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                              Text(e['title'],
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                  '${e['kind']} · ${dateLabel(e['updated_at'])}')
+                            ])),
+                        ProofState(
+                            identity: e['status'],
+                            child: Chip(label: Text(e['status'])))
+                      ]),
+                      if (e['kind'] == 'coding')
+                        Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                                'Claimed solved count: ${e['detail']['solved']}\n${e['detail']['import_method'] ?? 'Manual claim; independent review required'}',
+                                style: const TextStyle(
+                                    fontSize: 12, height: 1.5))),
+                      if ((e['review_note'] ?? '').toString().isNotEmpty)
+                        Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text('Review: ${e['review_note']}')),
+                      if (e['kind'] == 'certificate')
+                        Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                                'Issuer: ${e['detail']['issuer'] ?? 'Not supplied'} · Reference: ${e['detail']['reference'] ?? 'Not supplied'}\nIssued: ${e['detail']['issued_on'] ?? 'Not supplied'}')),
+                      Wrap(spacing: 8, children: [
+                        if ((e['url'] ?? '').toString().isNotEmpty)
+                          TextButton.icon(
+                              onPressed: () => c.run(() => openLink(e['url'])),
+                              icon: const Icon(Icons.open_in_new, size: 16),
+                              label: const Text('Source')),
+                        if (!['project', 'github'].contains(e['kind']) &&
+                            e['status'] != 'verified')
+                          TextButton.icon(
+                              onPressed: () => attachProof(c, e['id']),
+                              icon: const Icon(Icons.upload_file_outlined,
+                                  size: 16),
+                              label: const Text('Attach PDF proof')),
+                        if (e['has_file'] == true)
+                          TextButton.icon(
+                              onPressed: () => c.run(() => download(c.api,
+                                  '/evidence/${e['id']}/file', 'evidence.pdf')),
+                              icon: const Icon(Icons.download, size: 16),
+                              label: const Text('Download proof')),
+                        TextButton(
+                            onPressed: () => confirmDelete(context, c, e),
+                            child: const Text('Remove'))
+                      ])
+                    ]))),
       const SizedBox(height: 24),
       const SectionTitle('CV history',
           subtitle: 'Compare changes and restore a previous revision.'),
@@ -1598,7 +1705,7 @@ class EvidencePane extends ConsumerWidget {
                         Text(dateLabel(v['created_at']))
                       ])),
                   TextButton(
-                      onPressed: () => showDialog(
+                      onPressed: () => showAuctorDialog(
                           context: context,
                           builder: (_) => VersionComparison(
                               current: c.cv,
@@ -1633,7 +1740,7 @@ Future<void> attachProof(WorkspaceController c, String id) => c.run(() async {
     });
 Future<void> confirmDelete(
     BuildContext context, WorkspaceController c, Map<String, dynamic> e) async {
-  final yes = await showDialog<bool>(
+  final yes = await showAuctorDialog<bool>(
       context: context,
       builder: (ctx) => AuctorDialog(
               title: const Text('Remove this evidence?'),
@@ -2111,7 +2218,7 @@ class _ChallengesState extends ConsumerState<ChallengesPane> {
                         icon: const Icon(Icons.info_outline, size: 16),
                         label: const Text('Badge details')),
                     FilledButton.tonal(
-                        onPressed: () => showDialog(
+                        onPressed: () => showAuctorDialog(
                             context: context,
                             barrierDismissible: false,
                             builder: (_) => ChallengeDialog(
@@ -2240,28 +2347,41 @@ class _ChallengeState extends State<ChallengeDialog> {
                     if (remaining == 0 && result == null)
                       const Text(
                           'Time expired. Close this assessment and start a fresh attempt.'),
-                    if (result != null) ...[
-                      Icon(
-                          result!['passed']
-                              ? Icons.verified
-                              : Icons.school_outlined,
-                          size: 56,
-                          color: Theme.of(context).colorScheme.secondary),
-                      const SizedBox(height: 20),
-                      Text(
-                          result!['passed']
-                              ? 'Evidence earned. Well done.'
-                              : 'A useful signal for your next practice.',
-                          style: const TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 16),
-                      Text(
-                          '${result!['correct_count']}/5 correct. Actual score change: +${result!['score_delta']}.',
-                          style: const TextStyle(fontSize: 18)),
-                      const SizedBox(height: 12),
-                      const Text(
-                          'Assessment results measure these questions, rather than comprehensive professional competency.')
-                    ] else if (attempt != null)
+                    if (result != null)
+                      ProofReveal(
+                          key: ValueKey(attempt?['id']),
+                          child: Semantics(
+                              liveRegion: true,
+                              container: true,
+                              explicitChildNodes: true,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                        result!['passed']
+                                            ? Icons.verified
+                                            : Icons.school_outlined,
+                                        size: 56,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                        result!['passed']
+                                            ? 'Evidence earned. Well done.'
+                                            : 'A useful signal for your next practice.',
+                                        style: const TextStyle(
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                        '${result!['correct_count']}/5 correct. Actual score change: +${result!['score_delta']}.',
+                                        style: const TextStyle(fontSize: 18)),
+                                    const SizedBox(height: 12),
+                                    const Text(
+                                        'Assessment results measure these questions, rather than comprehensive professional competency.')
+                                  ])))
+                    else if (attempt != null)
                       for (final question in attempt!['questions'])
                         Padding(
                             padding: const EdgeInsets.only(bottom: 24),
@@ -2341,6 +2461,7 @@ class ActivityPane extends ConsumerWidget {
               child: const Text('Mark all read'))),
       for (final event in c.list('activity'))
         Padding(
+            key: ValueKey('activity-${event['id']}'),
             padding: const EdgeInsets.only(bottom: 12),
             child: Surface(
                 padding: const EdgeInsets.all(20),
@@ -2370,6 +2491,7 @@ class ActivityPane extends ConsumerWidget {
               'Compare evidence changes, including updates that add zero points.'),
       for (final snapshot in c.list('history'))
         Padding(
+            key: ValueKey('history-${snapshot['id']}'),
             padding: const EdgeInsets.only(bottom: 10),
             child: Surface(
                 padding: const EdgeInsets.all(18),
@@ -2395,7 +2517,8 @@ class ActivityPane extends ConsumerWidget {
       if (c.list('review_audit').isEmpty)
         const Text('No independent review decision recorded.'),
       for (final decision in c.list('review_audit'))
-        ReviewAuditCard(decision: decision),
+        ReviewAuditCard(
+            key: ValueKey('audit-${decision['id']}'), decision: decision),
     ]);
   }
 }
@@ -2404,7 +2527,7 @@ Future<void> showScoreComparison(
     BuildContext context, WorkspaceController c, dynamic id) {
   final rows = insightItems(c, 'score_comparisons');
   final item = rows.firstWhere((r) => r['history_id'] == id, orElse: () => {});
-  return showDialog<void>(
+  return showAuctorDialog<void>(
       context: context,
       builder: (_) => AuctorDialog(
               title: const Text('Evidence change comparison'),
@@ -2551,7 +2674,7 @@ class _ProfileState extends ConsumerState<ProfilePane> {
                 icon: const Icon(Icons.copy),
                 label: const Text('Copy profile link')),
             TextButton.icon(
-                onPressed: () => showDialog(
+                onPressed: () => showAuctorDialog(
                     context: context,
                     builder: (_) => AuctorDialog(
                             title: const Text('Share your profile'),
@@ -2606,6 +2729,19 @@ class _ProfileState extends ConsumerState<ProfilePane> {
               'Appearance and accessibility choices follow your account.'),
       Surface(
           child: Column(children: [
+        DropdownButtonFormField<AuctorEdition>(
+            isExpanded: true,
+            initialValue: c.edition,
+            decoration: const InputDecoration(labelText: 'Curated palette'),
+            items: [
+              for (final edition in AuctorEdition.values)
+                DropdownMenuItem(
+                    value: edition,
+                    child: Text(edition.label, overflow: TextOverflow.ellipsis))
+            ],
+            onChanged:
+                c.busy ? null : (value) => c.preferences(palette: value)),
+        const SizedBox(height: 16),
         DropdownButtonFormField<ThemeMode>(
             initialValue: c.theme,
             decoration: const InputDecoration(labelText: 'Appearance'),
@@ -2748,7 +2884,7 @@ class _DiscoverState extends ConsumerState<DiscoverPane> {
           FilledButton.tonal(
               onPressed: selected.length < 2
                   ? null
-                  : () => showDialog(
+                  : () => showAuctorDialog(
                       context: context,
                       builder: (_) => CandidateComparison(
                           candidates: people
@@ -2939,17 +3075,21 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
       if (queue == null && error == null)
         const Center(child: CircularProgressIndicator()),
       if (queue?.isEmpty == true)
-        const EmptyState('The review queue is clear',
-            'New experience, certificate and coding submissions appear here.'),
+        const ProofReveal(
+            child: EmptyState('The review queue is clear',
+                'New experience, certificate and coding submissions appear here.')),
       if (audit.isNotEmpty) ...[
         const SizedBox(height: 20),
         const SectionTitle('Recorded decisions',
             subtitle: 'Who reviewed each source, when, and why.'),
-        for (final decision in audit) ReviewAuditCard(decision: decision),
+        for (final decision in audit)
+          ReviewAuditCard(
+              key: ValueKey('decision-${decision['id']}'), decision: decision),
         const SizedBox(height: 20),
       ],
       for (final e in queue ?? [])
         Padding(
+            key: ValueKey('review-${e['id']}'),
             padding: const EdgeInsets.only(bottom: 16),
             child: Surface(
                 child: Column(
@@ -2993,7 +3133,7 @@ class _ReviewsState extends ConsumerState<ReviewsPane> {
   Future<void> decision(BuildContext context, WorkspaceController c, String id,
       String status) async {
     final note = TextEditingController();
-    final result = await showDialog<String>(
+    final result = await showAuctorDialog<String>(
         context: context,
         builder: (ctx) => AuctorDialog(
                 title: Text(status == 'verified'

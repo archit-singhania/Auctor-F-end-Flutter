@@ -13,19 +13,36 @@ abstract final class AuctorPalette {
   static const pearl = Color(0xfff4f1eb);
 }
 
-ThemeData auctorTheme(Brightness brightness, {bool highContrast = false}) {
+enum AuctorEdition {
+  atelier(
+      'Ivory & Jade', Color(0xff275d57), Color(0xffaed9cc), Color(0xff806239)),
+  archive(
+      'Linen & Ink', Color(0xff344d70), Color(0xffbbceeb), Color(0xff795f3c)),
+  dusk('Rose & Slate', Color(0xff704e62), Color(0xffe6c4d6), Color(0xff665f3d));
+
+  const AuctorEdition(this.label, this.accent, this.mist, this.metal);
+  final String label;
+  final Color accent, mist, metal;
+  static AuctorEdition parse(Object? value) => values
+      .firstWhere((edition) => edition.name == value, orElse: () => atelier);
+}
+
+ThemeData auctorTheme(Brightness brightness,
+    {bool highContrast = false,
+    AuctorEdition edition = AuctorEdition.atelier}) {
   final dark = brightness == Brightness.dark;
   final ink = dark ? const Color(0xfff3f0e7) : AuctorPalette.ink;
   final muted = dark ? const Color(0xffb8c7c8) : const Color(0xff526568);
-  final scheme = ColorScheme.fromSeed(
-          seedColor: AuctorPalette.jade, brightness: brightness)
-      .copyWith(
-    primary: dark ? AuctorPalette.jadeMist : AuctorPalette.jade,
+  final scheme =
+      ColorScheme.fromSeed(seedColor: edition.accent, brightness: brightness)
+          .copyWith(
+    primary: dark ? edition.mist : edition.accent,
     onPrimary: dark ? const Color(0xff132a27) : Colors.white,
-    primaryContainer: dark ? const Color(0xff29473f) : const Color(0xffdfede7),
-    onPrimaryContainer:
-        dark ? const Color(0xffe0f3e9) : const Color(0xff21453d),
-    secondary: dark ? AuctorPalette.champagne : AuctorPalette.bronze,
+    primaryContainer: dark
+        ? Color.lerp(AuctorPalette.graphite, edition.accent, .5)!
+        : Color.lerp(AuctorPalette.paper, edition.mist, .42)!,
+    onPrimaryContainer: dark ? const Color(0xfff3f0e7) : AuctorPalette.ink,
+    secondary: dark ? AuctorPalette.champagne : edition.metal,
     onSecondary: dark ? const Color(0xff302517) : Colors.white,
     secondaryContainer:
         dark ? const Color(0xff423a2f) : const Color(0xfff1e7d5),

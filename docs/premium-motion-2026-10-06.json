@@ -1,0 +1,208 @@
+{
+  "scope": "Auctor evidence-platform premium motion and persisted curated palettes",
+  "checked_at_utc": "2026-10-06T12:19:41.455657+00:00",
+  "motion": {
+    "pane_settle_ms": 220,
+    "card_settle_ms": [
+      220,
+      240,
+      260,
+      280
+    ],
+    "compact_server_state_ms": 180,
+    "sheet_ms": 220,
+    "reduced_motion": "immediate",
+    "dialog_keyboard_traversal": "closedLoop",
+    "idle_workspace_animation": false
+  },
+  "palettes": [
+    {
+      "key": "atelier",
+      "label": "Ivory & Jade"
+    },
+    {
+      "key": "archive",
+      "label": "Linen & Ink"
+    },
+    {
+      "key": "dusk",
+      "label": "Rose & Slate"
+    }
+  ],
+  "checks": {
+    "flutter_analyze": {
+      "result": "No issues found",
+      "seconds": 7.0
+    },
+    "flutter_tests": {
+      "passed": 27,
+      "seconds": 7,
+      "includes_font_loaded_visual_fixtures": 5
+    },
+    "isolated_backend": {
+      "passed": 18,
+      "seconds": 16.94
+    },
+    "web_release": {
+      "result": "passed",
+      "seconds": 38.4,
+      "api_origin": "http://localhost:8011",
+      "public_origin": "Current browser origin; tested http://localhost:8041"
+    },
+    "core_chrome": {
+      "result": "passed",
+      "journey": "Real sign-in; CV edit/save/readback; server-graded Docker5/5,+0.6; badge/graph/roadmap; private share creation/revocation/redaction; session reload;390px light/dark",
+      "page_errors": 0
+    },
+    "android_debug": {
+      "result": "passed",
+      "seconds": 106,
+      "offline": true,
+      "jdk": "21",
+      "tasks": 236,
+      "executed": 24,
+      "up_to_date": 212,
+      "native_device_execution": false,
+      "api_origin": "http://10.0.2.2:8011",
+      "public_origin": "http://10.0.2.2:8041"
+    },
+    "font_license_assets": "all four source/web/APK files byte-identical; both license manifest entries present"
+  },
+  "artifacts": [
+    {
+      "path": "build/web/main.dart.js",
+      "bytes": 3069396,
+      "sha256": "c95bf217c55596d55215c03b207114622f2539c236765247b1e111a10fdf7fe2"
+    },
+    {
+      "path": "build/app/outputs/apk/debug/app-debug.apk",
+      "bytes": 181197996,
+      "sha256": "ee9b34ffc3520f283abf9bb3cc00672ffdb3ea095df72aad939e6d07215153f0"
+    },
+    {
+      "path": "lib/premium/proof_motion.dart",
+      "bytes": 4313,
+      "sha256": "a328abc5b02c98640374d883d1ee6cdefa933c1166d044bad2172acb70e1af75"
+    },
+    {
+      "path": "lib/premium/visual_theme.dart",
+      "bytes": 8153,
+      "sha256": "12568cd2d8f4796b8e339983519d6001758561c3d0ce4311af9eddab9b8e90b8"
+    },
+    {
+      "path": "lib/premium/app.dart",
+      "bytes": 153747,
+      "sha256": "2807173de46681efcce6ccda6b7454ea8658c1a4b8ce2727761748dff90104dd"
+    },
+    {
+      "path": "lib/premium/controller.dart",
+      "bytes": 7745,
+      "sha256": "0dd8458fa3f89ac2e93012fc90639d50d6e7caf25886354d7af5306874ab804d"
+    },
+    {
+      "path": "lib/premium/liquid_glass.dart",
+      "bytes": 9009,
+      "sha256": "17731235a65ca6465eb1240e871723b6ea5cadfb8409c8845ced25544e0854d2"
+    },
+    {
+      "path": "test/premium_motion_test.dart",
+      "bytes": 7031,
+      "sha256": "4b287bcbb7b5667c519245a39e8ecf176cfab6c66ab96f83b22b8af5d5f0161a"
+    },
+    {
+      "path": "scripts/premium-motion-browser.cjs",
+      "bytes": 10617,
+      "sha256": "70fecf454d0f2f5f60b158563ceb3d5e55fc5c0ffee4d7fc8e4bf3fd6eedc6b0"
+    },
+    {
+      "path": "web/landing/index.html",
+      "bytes": 8928,
+      "sha256": "3447249421dde287d8f9968b2a9f6e1361f3b4807adeb93e3e287e8622a021f1"
+    }
+  ],
+  "bundled_assets": [
+    {
+      "path": "assets/fonts/Inter.ttf",
+      "bytes": 876576,
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+      "web_path": "build/web/assets/assets/fonts/Inter.ttf",
+      "apk_entry": "assets/flutter_assets/assets/fonts/Inter.ttf",
+      "source_web_apk_bytes_match": true
+    },
+    {
+      "path": "assets/fonts/Newsreader.ttf",
+      "bytes": 451664,
+      "sha256": "8a08d13f8a6c0d51be379a60af84f945f65369a67e509ee3c3bdcc421254d7c1",
+      "web_path": "build/web/assets/assets/fonts/Newsreader.ttf",
+      "apk_entry": "assets/flutter_assets/assets/fonts/Newsreader.ttf",
+      "source_web_apk_bytes_match": true
+    },
+    {
+      "path": "assets/fonts/OFL.txt",
+      "bytes": 4377,
+      "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
+      "web_path": "build/web/assets/assets/fonts/OFL.txt",
+      "apk_entry": "assets/flutter_assets/assets/fonts/OFL.txt",
+      "source_web_apk_bytes_match": true
+    },
+    {
+      "path": "assets/fonts/Newsreader-OFL.txt",
+      "bytes": 4394,
+      "sha256": "fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8",
+      "web_path": "build/web/assets/assets/fonts/Newsreader-OFL.txt",
+      "apk_entry": "assets/flutter_assets/assets/fonts/Newsreader-OFL.txt",
+      "source_web_apk_bytes_match": true
+    }
+  ],
+  "web_total_bytes": 43800675,
+  "backend_presentation": "Existing canonical ivory/jade/graphite/champagne PDF/SVG sources unchanged; curated preferences are personal client accents, so no new endpoint/schema/export payload is needed",
+  "manual_gates": [
+    "Native emulator/device execution",
+    "iOS/macOS signing",
+    "Live provider consent",
+    "Public hosting"
+  ],
+  "process_lifecycle": "Only verification processes started by this task are stopped after checks",
+  "screenshots": [
+    {
+      "path": "docs/screenshots/motion-2026-10-06/challenge-result.png",
+      "bytes": 669179,
+      "sha256": "e9f334beae02f817a509dbfb87fccfd94f3c091db4b483399d23b3fc72df07ab"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/cv-review.png",
+      "bytes": 467100,
+      "sha256": "42c63c1a8dc740334fa9c35a266dab4842f630fc938ac3ace5bc6a698a146395"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/mobile-reduced-dark.png",
+      "bytes": 101623,
+      "sha256": "fc26bcd88bd7ecd1ec327f6b2c1424509019df77691ab6ab802333da50778348"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/mobile-reduced-evidence.png",
+      "bytes": 105614,
+      "sha256": "3e8245b55824e780ea47dacdf3bd932b9a2eb41e61227c16788a025a84abc313"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/overview-desktop.png",
+      "bytes": 454528,
+      "sha256": "af27ca66af7e1693b4833b4ae08be73d2b41bf41f361f11779e07e5aef743f6b"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/palette-archive.png",
+      "bytes": 373340,
+      "sha256": "c26c1935891e8a6883ad91648d02d0ab33c86952cee6bcb1c8d1d668a68c3414"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/palette-atelier.png",
+      "bytes": 367198,
+      "sha256": "39d0882639a196dd998c649224f8d1ecc0c4563e9f77387d70f8365cf7fe72e7"
+    },
+    {
+      "path": "docs/screenshots/motion-2026-10-06/palette-dusk.png",
+      "bytes": 328207,
+      "sha256": "bca9bedff37757727bccddd7c6ea5f99500a22d87ebab9cee117dcfd2bd68464"
+    }
+  ]
+}

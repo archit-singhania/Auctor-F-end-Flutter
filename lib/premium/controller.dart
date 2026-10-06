@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'visual_theme.dart';
 
 class PlatformApi {
   static const base = String.fromEnvironment('API_BASE_URL',
@@ -85,6 +86,7 @@ class WorkspaceController extends ChangeNotifier {
   bool loading = true, busy = false;
   String? error;
   ThemeMode theme = ThemeMode.system;
+  AuctorEdition edition = AuctorEdition.atelier;
   bool reducedMotion = false, reducedTransparency = false, highContrast = false;
   int destination = 0;
   bool _disposed = false;
@@ -156,6 +158,7 @@ class WorkspaceController extends ChangeNotifier {
         _ => ThemeMode.system
       };
       reducedMotion = prefs['reduced_motion'] == true;
+      edition = AuctorEdition.parse(prefs['palette']);
       reducedTransparency = prefs['reduced_transparency'] == true;
       highContrast = prefs['high_contrast'] == true;
       error = null;
@@ -213,6 +216,7 @@ class WorkspaceController extends ChangeNotifier {
       });
   Future<void> preferences(
       {ThemeMode? mode,
+      AuctorEdition? palette,
       bool? motion,
       bool? transparency,
       bool? contrast}) async {
@@ -223,6 +227,7 @@ class WorkspaceController extends ChangeNotifier {
       'preferences': {
         ...Map<String, dynamic>.from(profile['preferences'] ?? {}),
         'theme': (mode ?? theme).name,
+        'palette': (palette ?? edition).name,
         'reduced_motion': motion ?? reducedMotion,
         'reduced_transparency': transparency ?? reducedTransparency,
         'high_contrast': contrast ?? highContrast

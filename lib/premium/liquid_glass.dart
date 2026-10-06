@@ -165,8 +165,16 @@ class GlassDestination extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: dark
-                        ? [const Color(0xff344e48), const Color(0xff273e3c)]
-                        : [const Color(0xffe3efe9), const Color(0xffd4e6df)])
+                        ? [
+                            scheme.primaryContainer,
+                            Color.lerp(
+                                scheme.surface, scheme.primaryContainer, .6)!
+                          ]
+                        : [
+                            Color.lerp(
+                                scheme.surface, scheme.primaryContainer, .65)!,
+                            scheme.primaryContainer
+                          ])
                 : null,
             border: Border.all(
                 color: selected
