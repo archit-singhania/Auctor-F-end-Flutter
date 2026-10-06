@@ -20,6 +20,31 @@ class StalledBodyClient extends http.BaseClient {
 }
 
 void main() {
+  testWidgets('Glass dialogs expose a readable heading to assistive navigation',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      final fixture = FixtureController(signedIn: true);
+      await tester.pumpWidget(ProviderScope(
+          overrides: [workspaceProvider.overrideWith((ref) => fixture)],
+          child: MaterialApp(
+              theme: theme(Brightness.light),
+              home: const AuctorDialog(
+                  title: Text('Review your story'),
+                  content: Text('Evidence remains private.')))));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Review your story'), findsOneWidget);
+      expect(
+          tester
+              .getSemantics(find.text('Review your story'))
+              .flagsCollection
+              .isHeader,
+          isTrue);
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
+  });
   testWidgets('Navigation announces its label once and remains actionable',
       (tester) async {
     final semantics = tester.ensureSemantics();

@@ -14,6 +14,11 @@ void main() {
   final fontRoot = Platform.environment['AUCTOR_QA_FONT_ROOT'];
   if (fontRoot == null) return;
   setUpAll(() async {
+    for (final family in ['Inter', 'Newsreader']) {
+      final bundled = FontLoader(family)
+        ..addFont(rootBundle.load('assets/fonts/$family.ttf'));
+      await bundled.load();
+    }
     final body = FontLoader('Roboto');
     for (final file in [
       'roboto-regular.ttf',

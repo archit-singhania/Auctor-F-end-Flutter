@@ -47,8 +47,13 @@ flutter:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter.ttf
+    - family: Newsreader
+      fonts:
+        - asset: assets/fonts/Newsreader.ttf
   assets:
     - assets/
+    - assets/fonts/OFL.txt
+    - assets/fonts/Newsreader-OFL.txt
     - assets/images/
     - assets/images/logo.png
     - assets/brand/

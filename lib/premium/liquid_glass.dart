@@ -34,7 +34,7 @@ class _LiquidGlassState extends State<LiquidGlass> {
     final reduced =
         widget.reducedMotion || MediaQuery.disableAnimationsOf(context);
     final radius = BorderRadius.circular(widget.radius);
-    final surface = dark ? const Color(0xff202529) : const Color(0xfffffdf7);
+    final surface = scheme.surface;
     return LayoutBuilder(builder: (context, bounds) {
       return MouseRegion(
         onEnter: (_) => setState(() => hovered = true),
@@ -59,9 +59,10 @@ class _LiquidGlassState extends State<LiquidGlass> {
             borderRadius: radius,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: dark ? .22 : .075),
-                blurRadius: hovered && !reduced ? 30 : 24,
-                offset: const Offset(0, 10),
+                color:
+                    const Color(0xff112e37).withValues(alpha: dark ? .3 : .095),
+                blurRadius: hovered && !reduced ? 34 : 28,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
@@ -69,7 +70,7 @@ class _LiquidGlassState extends State<LiquidGlass> {
             borderRadius: radius,
             child: BackdropFilter(
               enabled: !opaque,
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: opaque ? surface : null,
@@ -79,9 +80,9 @@ class _LiquidGlassState extends State<LiquidGlass> {
                           begin: highlight,
                           end: Alignment(-highlight.x, -highlight.y),
                           colors: [
-                            surface.withValues(alpha: dark ? .86 : .9),
-                            surface.withValues(alpha: dark ? .74 : .72),
-                            surface.withValues(alpha: dark ? .82 : .86),
+                            surface.withValues(alpha: dark ? .91 : .93),
+                            surface.withValues(alpha: dark ? .79 : .78),
+                            surface.withValues(alpha: dark ? .88 : .89),
                           ],
                           stops: const [0, .52, 1],
                         ),
@@ -90,7 +91,8 @@ class _LiquidGlassState extends State<LiquidGlass> {
                     width: widget.highContrast ? 1.5 : 1,
                     color: widget.highContrast
                         ? scheme.onSurface
-                        : Colors.white.withValues(alpha: dark ? .22 : .88),
+                        : (dark ? const Color(0xffd4e6e0) : Colors.white)
+                            .withValues(alpha: dark ? .23 : .94),
                   ),
                 ),
                 child: Stack(children: [
@@ -104,8 +106,8 @@ class _LiquidGlassState extends State<LiquidGlass> {
                               center: highlight,
                               radius: 1.15,
                               colors: [
-                                Colors.white
-                                    .withValues(alpha: dark ? .055 : .2),
+                                scheme.secondary
+                                    .withValues(alpha: dark ? .055 : .09),
                                 Colors.white.withValues(alpha: 0),
                               ],
                             ),
@@ -163,8 +165,8 @@ class GlassDestination extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: dark
-                        ? [const Color(0xff3a514b), const Color(0xff263b35)]
-                        : [const Color(0xffe0ece2), const Color(0xffd4e1d8)])
+                        ? [const Color(0xff344e48), const Color(0xff273e3c)]
+                        : [const Color(0xffe3efe9), const Color(0xffd4e6df)])
                 : null,
             border: Border.all(
                 color: selected

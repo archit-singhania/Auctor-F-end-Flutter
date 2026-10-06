@@ -89,7 +89,9 @@ const fs=require('fs');
  let graphVisible=false;
  for(let scroll=0;scroll<16;scroll++){
    const box=await page.getByText('Skills and their evidence',{exact:true}).boundingBox();
-   if(box&&box.y>80&&box.y<280){graphVisible=true;break;}
+   const lastSource=await page.getByRole('button',{name:'Inspect source connection',exact:true}).last().boundingBox();
+   const bottom=page.viewportSize().height-60;
+   if(box&&box.y>100&&lastSource&&lastSource.y+lastSource.height<bottom){graphVisible=true;break;}
    await page.mouse.move(980,500);await page.mouse.wheel(0,box&&box.y<80?-300:300);await page.waitForTimeout(250);
  }
  if(!graphVisible)throw new Error('Could not scroll the actual skills graph into view');

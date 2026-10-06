@@ -9,6 +9,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'controller.dart';
 import 'liquid_glass.dart';
+import 'visual_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'save_stub.dart'
     if (dart.library.io) 'save_io.dart'
@@ -16,7 +17,7 @@ import 'save_stub.dart'
 
 final workspaceProvider =
     ChangeNotifierProvider<WorkspaceController>((ref) => WorkspaceController());
-const pine = Color(0xff173e38), champagne = Color(0xffd6b77e);
+const pine = AuctorPalette.jade, champagne = AuctorPalette.champagne;
 
 class PremiumApp extends ConsumerStatefulWidget {
   const PremiumApp({super.key});
@@ -80,61 +81,8 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
   }
 }
 
-ThemeData theme(Brightness brightness, {bool highContrast = false}) {
-  final dark = brightness == Brightness.dark;
-  final scheme = ColorScheme.fromSeed(seedColor: pine, brightness: brightness)
-      .copyWith(
-          primary: dark ? const Color(0xffb5dcd0) : pine,
-          secondary: champagne,
-          surface: dark ? const Color(0xff1c2225) : const Color(0xfffffdf7),
-          onSurfaceVariant:
-              dark ? const Color(0xffc4cfc8) : const Color(0xff46554c),
-          outline: highContrast ? (dark ? Colors.white : Colors.black) : null);
-  return ThemeData(
-      fontFamily: 'Inter',
-      useMaterial3: true,
-      brightness: brightness,
-      colorScheme: scheme,
-      scaffoldBackgroundColor:
-          dark ? const Color(0xff101518) : const Color(0xfff5f4ec),
-      textTheme: Typography.material2021().black.apply(
-          fontFamily: 'Inter',
-          bodyColor: dark ? const Color(0xfff0f1e9) : const Color(0xff182821),
-          displayColor:
-              dark ? const Color(0xfff0f1e9) : const Color(0xff182821)),
-      inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: dark ? const Color(0xff20312a) : const Color(0xffeeefe7),
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none),
-          contentPadding: const EdgeInsets.all(18)),
-      filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)))),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              side: BorderSide(
-                  color: highContrast
-                      ? scheme.onSurface
-                      : scheme.outline.withValues(alpha: .55)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)))),
-      iconButtonTheme: IconButtonThemeData(
-          style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)))),
-      cardTheme: CardThemeData(
-          elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24))),
-      dividerColor: dark ? Colors.white12 : Colors.black12);
-}
+ThemeData theme(Brightness brightness, {bool highContrast = false}) =>
+    auctorTheme(brightness, highContrast: highContrast);
 
 class AuctorMark extends StatelessWidget {
   final double size;
@@ -217,14 +165,16 @@ class Surface extends ConsumerWidget {
             border: Border.all(
                 color: contrast
                     ? Theme.of(context).colorScheme.onSurface
-                    : dark
-                        ? Colors.white12
-                        : Colors.white.withValues(alpha: .8)),
+                    : Theme.of(context)
+                        .colorScheme
+                        .outlineVariant
+                        .withValues(alpha: dark ? .65 : .75)),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withValues(alpha: dark ? 0.12 : 0.025),
-                  blurRadius: 32,
-                  offset: const Offset(0, 12))
+                  color: const Color(0xff132b31)
+                      .withValues(alpha: dark ? 0.14 : 0.045),
+                  blurRadius: 36,
+                  offset: const Offset(0, 14))
             ]),
         child: Material(type: MaterialType.transparency, child: child));
     return content;
@@ -258,9 +208,14 @@ class AuctorDialog extends ConsumerWidget {
                       if (title != null)
                         Padding(
                             padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-                            child: DefaultTextStyle(
-                                style: Theme.of(context).textTheme.titleLarge!,
-                                child: title!)),
+                            child: Semantics(
+                                header: true,
+                                namesRoute: true,
+                                container: true,
+                                child: DefaultTextStyle(
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge!,
+                                    child: title!))),
                       if (content != null)
                         Flexible(
                             child: Padding(
@@ -292,14 +247,14 @@ class Backdrop extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: dark
                     ? [
-                        const Color(0xff0c1815),
-                        const Color(0xff17322a),
-                        const Color(0xff171e19)
+                        const Color(0xff11191f),
+                        const Color(0xff192d2f),
+                        const Color(0xff2a2728)
                       ]
                     : [
-                        const Color(0xfff4f3eb),
-                        const Color(0xffe0eae0),
-                        const Color(0xfff9efdd)
+                        const Color(0xfff4f1eb),
+                        const Color(0xffe6eeec),
+                        const Color(0xfff3e8da)
                       ])),
         child: child);
   }
@@ -350,9 +305,11 @@ class _WelcomeState extends ConsumerState<WelcomePage> {
                     ? 'Start your evidence journey'
                     : 'Welcome to your workspace',
                 style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -.7)),
+                    fontFamily: 'Newsreader',
+                    fontSize: 30,
+                    height: 1.12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -.5)),
             const SizedBox(height: 8),
             Text(register
                 ? 'Build a profile that earns its credibility.'
@@ -476,12 +433,13 @@ class _WelcomeState extends ConsumerState<WelcomePage> {
                                           Text(
                                               'Let your work\nspeak beautifully.',
                                               style: TextStyle(
+                                                  fontFamily: 'Newsreader',
                                                   fontSize: box.maxWidth > 850
-                                                      ? 66
-                                                      : 44,
+                                                      ? 72
+                                                      : 46,
                                                   height: 1.05,
                                                   fontWeight: FontWeight.w500,
-                                                  letterSpacing: -2.5)),
+                                                  letterSpacing: -1.3)),
                                           const SizedBox(height: 24),
                                           const Text(
                                               'A considered home for your developer identity.\nTurn your CV, repositories and assessed skills into\na clear, honest story of what you can do.',
@@ -548,12 +506,12 @@ class _WelcomeState extends ConsumerState<WelcomePage> {
                                                           vertical: 10),
                                                       child: Row(children: [
                                                         Text(item.$1,
-                                                            style:
-                                                                const TextStyle(
-                                                                    color:
-                                                                        champagne,
-                                                                    fontSize:
-                                                                        20)),
+                                                            style: TextStyle(
+                                                                color: Theme.of(
+                                                                        context)
+                                                                    .colorScheme
+                                                                    .secondary,
+                                                                fontSize: 20)),
                                                         const SizedBox(
                                                             width: 16),
                                                         Expanded(
@@ -733,9 +691,10 @@ class _WorkspaceState extends ConsumerState<WorkspacePage> {
                               children: [
                             Text(destinations[current].$1,
                                 style: const TextStyle(
-                                    fontSize: 27,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: -.8)),
+                                    fontFamily: 'Newsreader',
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: -.4)),
                             if (wide)
                               Text('Your craft. Your evidence. Your story.',
                                   style: TextStyle(
@@ -839,9 +798,11 @@ class SectionTitle extends StatelessWidget {
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title,
               style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -.6)),
+                  fontFamily: 'Newsreader',
+                  fontSize: 28,
+                  fontWeight: FontWeight.w500,
+                  height: 1.16,
+                  letterSpacing: -.3)),
           if (subtitle.isNotEmpty) ...[
             const SizedBox(height: 5),
             Text(subtitle,
@@ -870,7 +831,8 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Surface(
           child: Column(children: [
-        const Icon(Icons.blur_on_rounded, size: 40, color: champagne),
+        Icon(Icons.blur_on_rounded,
+            size: 40, color: Theme.of(context).colorScheme.secondary),
         const SizedBox(height: 16),
         Text(title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
@@ -914,8 +876,11 @@ class OverviewPane extends ConsumerWidget {
                       value: score / 10,
                       strokeWidth: 9,
                       strokeCap: StrokeCap.round,
-                      backgroundColor: champagne.withValues(alpha: .18),
-                      color: champagne)),
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withValues(alpha: .18),
+                      color: Theme.of(context).colorScheme.secondary)),
               Padding(
                   padding: const EdgeInsets.all(20),
                   child: FittedBox(
@@ -976,9 +941,11 @@ class OverviewPane extends ConsumerWidget {
                               value:
                                   (entry.value['fraction'] as num).toDouble(),
                               minHeight: 6,
-                              color: champagne,
-                              backgroundColor:
-                                  champagne.withValues(alpha: .15)))),
+                              color: Theme.of(context).colorScheme.secondary,
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: .15)))),
                   const SizedBox(width: 12),
                   Text(
                       '${entry.value['points']} / ${(entry.value['weight'] as num) * 10}',
@@ -1267,7 +1234,11 @@ class _EvidenceSkillsGraphState extends State<EvidenceSkillsGraph> {
           child: Chip(
               avatar: const Icon(Icons.hub_outlined, size: 18),
               label: Text('${node['name']} · ${node['status']}'))),
-      Center(child: Container(width: 1, height: 20, color: champagne)),
+      Center(
+          child: Container(
+              width: 1,
+              height: 20,
+              color: Theme.of(context).colorScheme.secondary)),
       for (final source in sources)
         Padding(
             padding: const EdgeInsets.only(bottom: 10),
@@ -1279,9 +1250,15 @@ class _EvidenceSkillsGraphState extends State<EvidenceSkillsGraph> {
                     decoration: BoxDecoration(
                         border: Border(
                             left: BorderSide(
-                                color: champagne.withValues(alpha: .6),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondary
+                                    .withValues(alpha: .6),
                                 width: 2)),
-                        color: champagne.withValues(alpha: .06)),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withValues(alpha: .06)),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1353,7 +1330,7 @@ class _ActionCard extends StatelessWidget {
       child: Surface(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, color: champagne, size: 28),
+        Icon(icon, color: Theme.of(context).colorScheme.secondary, size: 28),
         const SizedBox(height: 18),
         Text(title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
@@ -1451,13 +1428,15 @@ class EvidencePane extends ConsumerWidget {
         for (final p in c.cv['projects'])
           ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.code, color: champagne),
+              leading: Icon(Icons.code,
+                  color: Theme.of(context).colorScheme.secondary),
               title: Text(p['name']),
               subtitle: Text(p['description'] ?? '')),
         for (final e in c.cv['experience'])
           ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.work_outline, color: champagne),
+              leading: Icon(Icons.work_outline,
+                  color: Theme.of(context).colorScheme.secondary),
               title: Text('${e['role']} · ${e['company']}'),
               subtitle: Text(e['duration'] ?? '')),
         const Divider(),
@@ -1477,7 +1456,7 @@ class EvidencePane extends ConsumerWidget {
                     doc['status'] == 'succeeded'
                         ? Icons.check_circle_outline
                         : Icons.description_outlined,
-                    color: champagne),
+                    color: Theme.of(context).colorScheme.secondary),
                 const SizedBox(width: 16),
                 Expanded(
                     child: Column(
@@ -2114,8 +2093,9 @@ class _ChallengesState extends ConsumerState<ChallengesPane> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    const Icon(Icons.verified_outlined,
-                        color: champagne, size: 32),
+                    Icon(Icons.verified_outlined,
+                        color: Theme.of(context).colorScheme.secondary,
+                        size: 32),
                     const SizedBox(height: 20),
                     Text(item['name'],
                         style: const TextStyle(
@@ -2157,7 +2137,7 @@ class _ChallengesState extends ConsumerState<ChallengesPane> {
                       attempt['passed'] == true
                           ? Icons.check_circle_outline
                           : Icons.history,
-                      color: champagne),
+                      color: Theme.of(context).colorScheme.secondary),
                   const SizedBox(width: 14),
                   Expanded(
                       child: Column(
@@ -2244,7 +2224,9 @@ class _ChallengeState extends State<ChallengeDialog> {
             if (result == null)
               Text(
                   '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}',
-                  style: const TextStyle(fontSize: 18, color: champagne))
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.secondary))
           ]),
           content: SizedBox(
               width: 650,
@@ -2264,7 +2246,7 @@ class _ChallengeState extends State<ChallengeDialog> {
                               ? Icons.verified
                               : Icons.school_outlined,
                           size: 56,
-                          color: champagne),
+                          color: Theme.of(context).colorScheme.secondary),
                       const SizedBox(height: 20),
                       Text(
                           result!['passed']
@@ -2291,10 +2273,9 @@ class _ChallengeState extends State<ChallengeDialog> {
                                           fontSize: 17,
                                           fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 8),
-                                  for (final option
-                                      in (question['options'] as List)
-                                          .asMap()
-                                          .entries)
+                                  for (final option in (question['options'] as List)
+                                      .asMap()
+                                      .entries)
                                     Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 6),
@@ -2303,8 +2284,11 @@ class _ChallengeState extends State<ChallengeDialog> {
                                                 backgroundColor:
                                                     answers[question['id'].toString()] ==
                                                             option.key
-                                                        ? champagne.withValues(
-                                                            alpha: .18)
+                                                        ? Theme.of(context)
+                                                            .colorScheme
+                                                            .secondary
+                                                            .withValues(
+                                                                alpha: .18)
                                                         : null,
                                                 alignment: Alignment.centerLeft,
                                                 minimumSize: const Size(
@@ -2365,7 +2349,7 @@ class ActivityPane extends ConsumerWidget {
                       event['read'] == true
                           ? Icons.check_circle_outline
                           : Icons.circle_notifications_outlined,
-                      color: champagne),
+                      color: Theme.of(context).colorScheme.secondary),
                   const SizedBox(width: 18),
                   Expanded(
                       child: Column(
@@ -2391,9 +2375,9 @@ class ActivityPane extends ConsumerWidget {
                 padding: const EdgeInsets.all(18),
                 child: Row(children: [
                   Text('${snapshot['score']['total']}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 25,
-                          color: champagne,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.w600)),
                   const SizedBox(width: 20),
                   Expanded(child: Text(snapshot['reason'])),
@@ -2800,7 +2784,9 @@ class _DiscoverState extends ConsumerState<DiscoverPane> {
                           Text('@${person['profile']['handle']}')
                         ])),
                     Text('${person['score']['total']}/10',
-                        style: const TextStyle(fontSize: 23, color: champagne))
+                        style: TextStyle(
+                            fontSize: 23,
+                            color: Theme.of(context).colorScheme.secondary))
                   ]),
                   const SizedBox(height: 14),
                   Wrap(spacing: 8, runSpacing: 8, children: [
@@ -2877,9 +2863,11 @@ class CandidateComparison extends StatelessWidget {
                                                 fontWeight: FontWeight.w600)),
                                         const SizedBox(height: 12),
                                         Text('${p['score']['total']}/10',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 fontSize: 30,
-                                                color: champagne)),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .secondary)),
                                         const SizedBox(height: 12),
                                         Text(
                                             'Skills\n${(p['skills'] as List).join(', ')}'),
@@ -3124,11 +3112,13 @@ class _PublicState extends ConsumerState<PublicPage> {
                                             const SizedBox(height: 24),
                                             Row(children: [
                                               Text('${data!['score']['total']}',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                       fontSize: 56,
                                                       fontWeight:
                                                           FontWeight.w500,
-                                                      color: champagne)),
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary)),
                                               const SizedBox(width: 16),
                                               const Text(
                                                   'Auctor score / 10\nEvidence summary • formula v1')
@@ -3146,10 +3136,12 @@ class _PublicState extends ConsumerState<PublicPage> {
                                           Chip(label: Text(skill.toString())),
                                         for (final badge in data!['badges'])
                                           Chip(
-                                              avatar: const Icon(
+                                              avatar: Icon(
                                                   Icons.verified_outlined,
                                                   size: 16,
-                                                  color: champagne),
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .secondary),
                                               label: Text(badge.toString()))
                                       ])),
                                   const SizedBox(height: 28),
@@ -3161,8 +3153,10 @@ class _PublicState extends ConsumerState<PublicPage> {
                                             const EdgeInsets.only(bottom: 14),
                                         child: Surface(
                                             child: Row(children: [
-                                          const Icon(Icons.verified_outlined,
-                                              color: champagne),
+                                          Icon(Icons.verified_outlined,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary),
                                           const SizedBox(width: 18),
                                           Expanded(
                                               child: Column(

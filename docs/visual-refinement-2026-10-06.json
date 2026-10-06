@@ -1,0 +1,140 @@
+{
+  "scope": "Auctor premium visual refinement",
+  "checked_at_utc": "2026-10-06T11:40:28.389044+00:00",
+  "palette": {
+    "jade": "#275d57",
+    "paper": "#fffcf6",
+    "graphite": "#20282e",
+    "champagne": "#d8bd8a",
+    "light_text_accent": "#806239"
+  },
+  "typography": {
+    "display": "Bundled Newsreader",
+    "body_controls": "Bundled Inter"
+  },
+  "checks": {
+    "flutter_analyze": "No issues found; packaging recheck: 63.1 s, lib/test",
+    "flutter_tests": 23,
+    "isolated_backend_tests": 18,
+    "web_release": "passed; packaging rebuild: 10.4 s, local 8011/8041 origins",
+    "local_browser_workflow": "passed; no page errors",
+    "marketing_desktop_mobile_dark": "passed; no overflow/page errors; fonts/links verified",
+    "pdf_fixture": "3 pages; rendered and visually checked",
+    "svg_long_handle": "valid XML; content-sized width",
+    "tracked_ignored_files_frontend": 0,
+    "tracked_ignored_files_backend": 0,
+    "android_debug": "Offline JDK 21 build successful in 2m 35s; 236 tasks (28 executed, 208 up-to-date). Bundled fonts, licenses and emulator origins verified.",
+    "font_license_packaging": "Inter, Newsreader and both SIL license files match source bytes in web and Android bundles"
+  },
+  "artifacts": [
+    {
+      "path": "build/web/main.dart.js",
+      "bytes": 3070743,
+      "sha256": "982d30d90a36f684211432bbcc34b9cac47c1342dc0124fb2872e41a31faf1de"
+    },
+    {
+      "path": "assets/fonts/Newsreader.ttf",
+      "bytes": 451664,
+      "sha256": "8a08d13f8a6c0d51be379a60af84f945f65369a67e509ee3c3bdcc421254d7c1"
+    },
+    {
+      "path": "docs/screenshots/refinement-2026-10-06/browser-overview.png",
+      "bytes": 465270,
+      "sha256": "df87fb7f2782c1f7d560483aaa771b93158a8691bf827ed64e8603835b12231d"
+    },
+    {
+      "path": "docs/screenshots/refinement-2026-10-06/browser-mobile-dark.png",
+      "bytes": 128636,
+      "sha256": "f036c4f056246852f02c9c717de419b4ef84247c05a320ebf2698369dc2e8145"
+    },
+    {
+      "path": "build/app/outputs/apk/debug/app-debug.apk",
+      "bytes": 181183521,
+      "sha256": "c6473911b16b9ef9257bc2e0f42584f24075749fb2ae7686bcf3b97264bb7552",
+      "modified_utc": "2026-10-06T11:40:03.258196+00:00"
+    }
+  ],
+  "packaging_recheck": {
+    "date": "2026-10-06",
+    "pub_get": "offline success",
+    "analyze_seconds": 63.1,
+    "web_build_seconds": 10.4,
+    "android_build_seconds": 155,
+    "android_gradle_offline": true,
+    "android_jdk": "21",
+    "android_tasks": 236,
+    "android_executed_tasks": 28,
+    "android_up_to_date_tasks": 208,
+    "web_font_manifest_verified": true,
+    "web_asset_manifest_license_entries_verified": true,
+    "full_journey_tests": "Not rerun for this license-only asset manifest change; existing results retained",
+    "web_api_origin": "http://localhost:8011",
+    "web_public_origin": "Current browser origin; static verification used http://localhost:8041",
+    "android_api_origin": "http://10.0.2.2:8011",
+    "android_public_origin": "http://10.0.2.2:8041",
+    "bundled_assets": [
+      {
+        "source_path": "assets/fonts/Inter.ttf",
+        "web_path": "build/web/assets/assets/fonts/Inter.ttf",
+        "apk_entry": "assets/flutter_assets/assets/fonts/Inter.ttf",
+        "bytes": 876576,
+        "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+        "source_web_apk_bytes_match": true
+      },
+      {
+        "source_path": "assets/fonts/Newsreader.ttf",
+        "web_path": "build/web/assets/assets/fonts/Newsreader.ttf",
+        "apk_entry": "assets/flutter_assets/assets/fonts/Newsreader.ttf",
+        "bytes": 451664,
+        "sha256": "8a08d13f8a6c0d51be379a60af84f945f65369a67e509ee3c3bdcc421254d7c1",
+        "source_web_apk_bytes_match": true
+      },
+      {
+        "source_path": "assets/fonts/OFL.txt",
+        "web_path": "build/web/assets/assets/fonts/OFL.txt",
+        "apk_entry": "assets/flutter_assets/assets/fonts/OFL.txt",
+        "bytes": 4377,
+        "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
+        "source_web_apk_bytes_match": true
+      },
+      {
+        "source_path": "assets/fonts/Newsreader-OFL.txt",
+        "web_path": "build/web/assets/assets/fonts/Newsreader-OFL.txt",
+        "apk_entry": "assets/flutter_assets/assets/fonts/Newsreader-OFL.txt",
+        "bytes": 4394,
+        "sha256": "fdfad38143ec470553cae82a1e45320bdd1b9ec70415d37bd0171051d8a4ded8",
+        "source_web_apk_bytes_match": true
+      }
+    ],
+    "static_http_checks": [
+      {
+        "path": "main.dart.js",
+        "http_status": 200,
+        "served_file_bytes_match": true
+      },
+      {
+        "path": "assets/assets/fonts/Inter.ttf",
+        "http_status": 200,
+        "served_file_bytes_match": true
+      },
+      {
+        "path": "assets/assets/fonts/Newsreader.ttf",
+        "http_status": 200,
+        "served_file_bytes_match": true
+      },
+      {
+        "path": "assets/assets/fonts/OFL.txt",
+        "http_status": 200,
+        "served_file_bytes_match": true
+      },
+      {
+        "path": "assets/assets/fonts/Newsreader-OFL.txt",
+        "http_status": 200,
+        "served_file_bytes_match": true
+      }
+    ],
+    "preview_lifecycle": "Short-lived verification server stopped after checking all five served files",
+    "api_runtime": "Source API was stopped; no API startup or functional journeys repeated for this license-only change",
+    "web_total_bytes": 43801424
+  }
+}
