@@ -10,7 +10,7 @@ Reduce motion and the system's reduced-motion setting make route, card, sheet, s
 
 ## Verification
 
-The [machine receipt](premium-motion-2026-10-06.json) records the final source/build fingerprints and exact check outcomes. [The browser receipt](premium-motion-browser-2026-10-06.json) records actual local Chrome checks with labelled synthetic accounts. Current browser screenshots live in `screenshots/motion-2026-10-06/`; historical refinement evidence remains separately documented.
+The [machine receipt](premium-motion-2026-10-06.json) records the final source/build fingerprints and exact check outcomes. The machine receipt records the completed core Chrome journey with labelled synthetic accounts. Dedicated reviewer/landing screenshots are available, but no separate completed browser receipt is present; those additional checks are not counted here. Current browser screenshots live in `screenshots/motion-2026-10-06/`; historical refinement evidence remains separately documented.
 
 Flutter regression checks cover reduced motion settling immediately, preserved profile draft/focus/scroll (including failed refresh notices), unknown palette fallback, persisted preferences, individually accessible server-grade results, all six developer destinations at 390/1440 pixels in light/dark, 180% text and opaque high contrast. Backend tests use an isolated PostgreSQL schema and temporary private-file directory; they cover real grading, reviewer decisions, preference readback, PDF/SVG endpoints and privacy rules. Browser checks exercise the real app and API, rather than presenting widget fixtures as a browser journey.
 
