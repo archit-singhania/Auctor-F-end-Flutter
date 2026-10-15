@@ -39,3 +39,9 @@ Follow [the full manual test guide](docs/MANUAL_TESTS.md) for exact startup comm
 
 See [the October 6 visual refinement](docs/VISUAL-REFINEMENT-2026-10-06.md) for the richer palette, bundled editorial typography, rebuilt public landing, matching PDF/SVG exports, fresh browser screenshots and current verification results.
 
+
+## October 15 advanced additions
+
+Career storytelling and reviewed role-fit matching now use owned, revision-bound PostgreSQL resources. Public stories label candidate narrative and redact unverified/private evidence links; matching preserves source snapshots and leaves the developer score unchanged. See [manual acceptance](../Auctor-F-end-Flutter/docs/CAREER-ROLE-FIT-2026-10-15.md) and the API’s `/docs`. Extraction recognizes five local skill families; manual requirements cover others. Physical-device/iOS validation remains unverified.
+
+Evidence comparison and interview practice are implemented in Profile’s Evidence & interview atelier. They add immutable owned snapshots, worker-based PDF text extraction, saved line annotations, role-bound practice prompts and persistent self-review sessions. See [workbench manual and limitations](../Auctor-F-end-Flutter/docs/WORKBENCH-2026-10-15.md). Practice is ungraded; comparisons do not verify document pixels or claim truth.

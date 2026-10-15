@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-15",
+  "implemented": [
+    "Interactive career story",
+    "Role-fit workspace",
+    "Explainable role-fit engine"
+  ],
+  "backendTests": 25,
+  "flutterRegressionTests": 26,
+  "focusedRecoveryTests": 2,
+  "analysis": "No issues",
+  "webRelease": "passed; acceptance API http://127.0.0.1:8106",
+  "androidDebug": "passed; default API http://localhost:8000",
+  "browser": {
+    "checkedAtUtc": "2026-10-15T11:28:25.484Z",
+    "careerRevision": 1,
+    "roleRunId": "gcTrPCzMb73gMGi3zRepEQUD",
+    "coveragePercent": 0,
+    "publicNarrative": true,
+    "revokedShare": true,
+    "persistedAfterReload": true,
+    "pageErrors": []
+  },
+  "migrationVersions": [
+    3,
+    4
+  ],
+  "testIsolation": "Separate random local PostgreSQL test schemas; separate browser acceptance schema/storage",
+  "sourceAndArtifacts": [
+    {
+      "path": "Auctor-B-end-FastAPI/app/career.py",
+      "sha256": "2944ea36c454baa03ace5ea23429d84c9f89b61f95acc35335a438256dda941a"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/app/role_fit.py",
+      "sha256": "200ea90c826057c58064a2bbd19edf8cf70646df202e598039bef7c1802b9196"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/app/main.py",
+      "sha256": "c1c8d56fa59d61d0a1f1558d567de369292af022af68020870cd1944e5aec377"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/app/platform.py",
+      "sha256": "22b5f09a700505393fac2c7df5d944fe0a37d5e8b3a370b0d169b4afa24d4921"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/schema.sql",
+      "sha256": "dcd4fbf20c0b86491e1adf61f0908a288cd43c4cf49a266d78d337377f4c9990"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/tests/test_integration.py",
+      "sha256": "fb087b371c254e19ee9b2fe1f716b34122d2bec580c3502eb49945d858cfb0e9"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/tests/test_role_fit.py",
+      "sha256": "4db54da6ab616efab709a3cd6b1924a49bb51878b3c448d7aac54f306890eee6"
+    },
+    {
+      "path": "Auctor-B-end-FastAPI/docs/career-role-openapi.json",
+      "sha256": "210bd0c0053df42a09cb08812afb9cce3fc8ab87f73be5debd633cbc68e7e2fb"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/lib/premium/career_story.dart",
+      "sha256": "29bb1c8505e232d4adb2f4c4fc0cf3f7343257c2b14fd669d4eac5f44d0d7cf6"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/lib/premium/role_fit.dart",
+      "sha256": "70d68278943abfe49f3d1430871cb5a16390af6175dfa8f791b211a99cb32269"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/lib/premium/controller.dart",
+      "sha256": "6150d3830e1101c77ae7a8445a4d1f7c7f2a920c5fa9d346198f7f6e1a03925a"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/lib/premium/app.dart",
+      "sha256": "8e29124edb7b2b8c163b062e984e6b670f6e5907296f7139f52b3f554ca2cc3e"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/test/career_story_test.dart",
+      "sha256": "b626aeee0484dcc3a686c37f1a33f96d0fbd323b025ba1d692428bc28e23426c"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/test/role_fit_test.dart",
+      "sha256": "34df0212e7e66ab24d87fd6d2f548bf1fdbab7b32354678fe20f70e774e3411e"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/tools/advanced_acceptance.cjs",
+      "sha256": "f9541fcc87d7d2dc667fcc41486931b619e300b0f4fb3dbeb0855df5a13e9b05"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/build/web/main.dart.js",
+      "sha256": "c12c25d4ac41e8898cd85bc28da3a4d3a2361e11dd80b2b74200d9209dc8bbdd"
+    },
+    {
+      "path": "Auctor-F-end-Flutter/build/app/outputs/apk/debug/app-debug.apk",
+      "sha256": "55121c4f24846bf3f4895ba8efdb24ec8412a4172a9679de0f600648102f182d"
+    }
+  ],
+  "unverified": [
+    "Physical-device operation",
+    "iOS builds",
+    "Wasm unsupported by existing storage plugin"
+  ],
+  "buildWarnings": [
+    "Gradle/AGP/Kotlin deprecations",
+    "SDK XML tooling mismatch",
+    "Unused Cupertino font-family warning"
+  ]
+}

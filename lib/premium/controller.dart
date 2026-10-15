@@ -83,6 +83,9 @@ class WorkspaceController extends ChangeNotifier {
   final PlatformApi api;
   final FlutterSecureStorage storage;
   Map<String, dynamic>? workspace;
+  Map<String, dynamic>? careerDraft;
+  Map<String, dynamic>? roleDraft;
+  Map<String, dynamic>? workbenchDraft;
   bool loading = true, busy = false;
   String? error;
   ThemeMode theme = ThemeMode.system;
@@ -167,6 +170,9 @@ class WorkspaceController extends ChangeNotifier {
       if (e.status == 401) {
         api.token = null;
         workspace = null;
+        careerDraft = null;
+        roleDraft = null;
+        workbenchDraft = null;
         await storage.delete(key: 'auctor-session');
       }
       rethrow;
@@ -200,6 +206,9 @@ class WorkspaceController extends ChangeNotifier {
       await storage.delete(key: 'auctor-session');
       api.token = null;
       workspace = null;
+      careerDraft = null;
+      roleDraft = null;
+      workbenchDraft = null;
       destination = 0;
       if (remoteFailure != null) {
         throw ApiFailure(
@@ -234,4 +243,18 @@ class WorkspaceController extends ChangeNotifier {
       }
     });
   }
+}
+
+/// JSON objects are unordered; PostgreSQL JSONB may reorder their keys.
+bool sameWorkspaceValue(Object? a, Object? b) {
+  Object? ordered(Object? value) {
+    if (value is Map) {
+      final keys = value.keys.map((k) => k.toString()).toList()..sort();
+      return {for (final key in keys) key: ordered(value[key])};
+    }
+    if (value is List) return value.map(ordered).toList();
+    return value;
+  }
+
+  return jsonEncode(ordered(a)) == jsonEncode(ordered(b));
 }

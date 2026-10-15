@@ -8,6 +8,9 @@ import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'controller.dart';
+import 'career_story.dart';
+import 'role_fit.dart';
+import 'evidence_workbench.dart';
 import 'liquid_glass.dart';
 import 'visual_theme.dart';
 import 'proof_motion.dart';
@@ -2613,6 +2616,12 @@ class _ProfileState extends ConsumerState<ProfilePane> {
     discoverable ??= c.profile['discoverable'] == true;
     final publicUrl = '${shareOrigin()}/#/public/${c.profile['handle']}';
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      CareerStory(controller: c),
+      const SizedBox(height: 24),
+      RoleFitWorkspace(controller: c),
+      const SizedBox(height: 24),
+      EvidenceWorkbench(controller: c),
+      const SizedBox(height: 24),
       const SectionTitle('A profile that feels like you',
           subtitle: 'A clear identity, with deliberate sharing choices.'),
       Surface(
@@ -3265,6 +3274,9 @@ class _PublicState extends ConsumerState<PublicPage> {
                                             ])
                                           ])),
                                   const SizedBox(height: 28),
+                                  PublicCareerStory(
+                                      story: Map<String, dynamic>.from(
+                                          data!['career_story'] ?? {})),
                                   const SectionTitle(
                                       'Skills and assessed badges'),
                                   Surface(
