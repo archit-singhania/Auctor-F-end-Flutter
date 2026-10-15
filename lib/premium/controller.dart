@@ -62,7 +62,7 @@ class PlatformApi {
 
   Future<Uint8List> bytes(String path) async {
     final res = await client.get(Uri.parse('$base/api$path'), headers: {
-      'Authorization': 'Bearer $token'
+      if (token != null) 'Authorization': 'Bearer $token'
     }).timeout(const Duration(seconds: 30));
     if (res.statusCode != 200) {
       throw ApiFailure('Download failed (${res.statusCode})', res.statusCode);
@@ -86,6 +86,7 @@ class WorkspaceController extends ChangeNotifier {
   Map<String, dynamic>? careerDraft;
   Map<String, dynamic>? roleDraft;
   Map<String, dynamic>? workbenchDraft;
+  Map<String, dynamic>? presentationDraft;
   bool loading = true, busy = false;
   String? error;
   ThemeMode theme = ThemeMode.system;
@@ -173,6 +174,7 @@ class WorkspaceController extends ChangeNotifier {
         careerDraft = null;
         roleDraft = null;
         workbenchDraft = null;
+        presentationDraft = null;
         await storage.delete(key: 'auctor-session');
       }
       rethrow;
@@ -209,6 +211,7 @@ class WorkspaceController extends ChangeNotifier {
       careerDraft = null;
       roleDraft = null;
       workbenchDraft = null;
+      presentationDraft = null;
       destination = 0;
       if (remoteFailure != null) {
         throw ApiFailure(

@@ -11,6 +11,8 @@ import 'controller.dart';
 import 'career_story.dart';
 import 'role_fit.dart';
 import 'evidence_workbench.dart';
+import 'recruiter_presentation.dart';
+import 'verification_center.dart';
 import 'liquid_glass.dart';
 import 'visual_theme.dart';
 import 'proof_motion.dart';
@@ -59,6 +61,10 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
               PublicPage(
                   key: ValueKey(s.pathParameters['token']),
                   path: '/share/${s.pathParameters['token']}'))),
+      GoRoute(
+          path: '/presentation/:token',
+          pageBuilder: (context, s) => proofPage(context, s,
+              RecruiterPresentationPage(token: s.pathParameters['token']!))),
       for (final old in [
         'home',
         'dashboard',
@@ -2622,6 +2628,10 @@ class _ProfileState extends ConsumerState<ProfilePane> {
       const SizedBox(height: 24),
       EvidenceWorkbench(controller: c),
       const SizedBox(height: 24),
+      RecruiterPresentationEditor(controller: c),
+      const SizedBox(height: 24),
+      VerificationCenter(controller: c),
+      const SizedBox(height: 24),
       const SectionTitle('A profile that feels like you',
           subtitle: 'A clear identity, with deliberate sharing choices.'),
       Surface(
@@ -2707,7 +2717,7 @@ class _ProfileState extends ConsumerState<ProfilePane> {
       const SizedBox(height: 24),
       SectionTitle('Private sharing',
           subtitle:
-              'Share without joining discovery. Revoke access at any time.',
+              'Share without joining discovery. New profile links expire after 7 days; revoke access at any time.',
           trailing: FilledButton.tonalIcon(
               onPressed: () => c.mutate('/shares'),
               icon: const Icon(Icons.link),
@@ -2720,11 +2730,12 @@ class _ProfileState extends ConsumerState<ProfilePane> {
                 child: Row(children: [
                   Expanded(
                       child: Text(
-                          '${share['revoked'] ? 'Revoked' : 'Active'} · ${dateLabel(share['created_at'])}')),
+                          '${share['revoked'] ? 'Revoked' : DateTime.tryParse((share['expires_at'] ?? '').toString())?.isBefore(DateTime.now()) == true ? 'Expired' : 'Active'} · ${dateLabel(share['created_at'])}')),
                   if (!share['revoked']) ...[
                     TextButton(
                         onPressed: () => Clipboard.setData(ClipboardData(
-                            text: '${shareOrigin()}/#/share/${share['id']}')),
+                            text:
+                                '${shareOrigin()}/#/${share['kind'] == 'presentation' ? 'presentation' : 'share'}/${share['id']}')),
                         child: const Text('Copy')),
                     TextButton(
                         onPressed: () => c.mutate('/shares/${share['id']}',
