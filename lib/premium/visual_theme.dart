@@ -109,6 +109,24 @@ ThemeData auctorTheme(Brightness brightness,
     scaffoldBackgroundColor:
         dark ? const Color(0xff11191f) : AuctorPalette.pearl,
     textTheme: text,
+    dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        titleTextStyle: text.headlineMedium,
+        contentTextStyle: text.bodyMedium,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side:
+                BorderSide(color: highContrast ? ink : scheme.outlineVariant))),
+    bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        dragHandleColor: scheme.onSurfaceVariant,
+        shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            side:
+                BorderSide(color: highContrast ? ink : scheme.outlineVariant))),
     iconTheme: IconThemeData(color: scheme.onSurfaceVariant, size: 22),
     inputDecorationTheme: InputDecorationTheme(
         filled: true,
