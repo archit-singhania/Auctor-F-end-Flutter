@@ -1,3 +1,13 @@
+import 'account_deletion.dart';
+import 'portability.dart';
+import 'assessment_quality.dart';
+import 'organizations.dart';
+import 'disputes.dart';
+import 'evidence_lineage.dart';
+import 'recruiter_explorer.dart';
+import 'profile_analytics.dart';
+import 'case_study.dart';
+import 'applications.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
@@ -11,6 +21,7 @@ import 'controller.dart';
 import 'career_story.dart';
 import 'role_fit.dart';
 import 'evidence_workbench.dart';
+import 'evidence_collection.dart';
 import 'recruiter_presentation.dart';
 import 'verification_center.dart';
 import 'liquid_glass.dart';
@@ -37,6 +48,12 @@ class _PremiumAppState extends ConsumerState<PremiumApp> {
   void initState() {
     super.initState();
     router = GoRouter(routes: [
+      GoRoute(
+          path: '/deletion-status',
+          builder: (context, state) => DeletionStatusPage(
+              initial: state.extra is Map<String, dynamic>
+                  ? state.extra as Map<String, dynamic>
+                  : null)),
       GoRoute(
           path: '/',
           pageBuilder: (context, state) =>
@@ -1595,6 +1612,20 @@ class EvidencePane extends ConsumerWidget {
               ])))
       ],
       const SizedBox(height: 24),
+      AssessmentQuality(controller: c),
+      const SizedBox(height: 24),
+      DisputesWorkspace(controller: c),
+      const SizedBox(height: 24),
+      EvidenceLineage(controller: c),
+      const SizedBox(height: 24),
+      EvidenceCollection(
+          controller: c,
+          submitEvidence: () async {
+            await showAuctorDialog(
+                context: context,
+                builder: (_) => EvidenceEditor(controller: c));
+          }),
+      const SizedBox(height: 24),
       SectionTitle('Supporting proof',
           subtitle:
               'Evidence is verified by ownership or an independent review.',
@@ -2622,6 +2653,16 @@ class _ProfileState extends ConsumerState<ProfilePane> {
     discoverable ??= c.profile['discoverable'] == true;
     final publicUrl = '${shareOrigin()}/#/public/${c.profile['handle']}';
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      AccountPortability(controller: c),
+      const SizedBox(height: 24),
+      AccountDeletion(controller: c),
+      const SizedBox(height: 24),
+      ProfileAnalytics(controller: c),
+      const SizedBox(height: 24),
+      CaseStudyBuilder(controller: c),
+      const SizedBox(height: 24),
+      ApplicationWorkspace(controller: c),
+      const SizedBox(height: 24),
       CareerStory(controller: c),
       const SizedBox(height: 24),
       RoleFitWorkspace(controller: c),
@@ -2816,235 +2857,17 @@ class _ProfileState extends ConsumerState<ProfilePane> {
   }
 }
 
-class DiscoverPane extends ConsumerStatefulWidget {
+class DiscoverPane extends ConsumerWidget {
   const DiscoverPane({super.key});
   @override
-  ConsumerState<DiscoverPane> createState() => _DiscoverState();
-}
-
-class _DiscoverState extends ConsumerState<DiscoverPane> {
-  final query = TextEditingController();
-  double minimum = 0;
-  bool onlySaved = false, busy = true;
-  String? error;
-  List<Map<String, dynamic>> people = [];
-  final selected = <int>{};
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(load);
-  }
-
-  @override
-  void dispose() {
-    query.dispose();
-    super.dispose();
-  }
-
-  Future<void> load() async {
-    setState(() => busy = true);
-    try {
-      final data = await ref.read(workspaceProvider).api.call(
-          '/candidates?q=${Uri.encodeQueryComponent(query.text)}&min_score=$minimum');
-      if (mounted) {
-        setState(() {
-          people =
-              (data as List).map((e) => Map<String, dynamic>.from(e)).toList();
-          selected.retainAll(people.map((p) => p['profile']['id'] as int));
-          error = null;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => error = e.toString());
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = ref.watch(workspaceProvider);
-    final filtered =
-        people.where((p) => !onlySaved || p['saved'] == true).toList();
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const SectionTitle('Discover the work behind the name',
-          subtitle:
-              'An opt-in directory of profiles, with evidence you can inspect.'),
-      Surface(
-          child: Column(children: [
-        TextField(
-            controller: query,
-            onSubmitted: (_) => load(),
-            decoration: InputDecoration(
-                labelText: 'Name, handle or skill',
-                suffixIcon: IconButton(
-                    onPressed: load,
-                    tooltip: 'Search',
-                    icon: const Icon(Icons.search)))),
-        const SizedBox(height: 16),
-        const Align(
-            alignment: Alignment.centerLeft, child: Text('Minimum score')),
-        Row(children: [
-          Expanded(
-              child: Slider(
-                  value: minimum,
-                  min: 0,
-                  max: 10,
-                  divisions: 20,
-                  label: minimum.toStringAsFixed(1),
-                  onChanged: (v) => setState(() => minimum = v),
-                  onChangeEnd: (_) => load())),
-          Text(minimum.toStringAsFixed(1))
-        ]),
-        Wrap(spacing: 16, children: [
-          FilterChip(
-              label: const Text('Saved candidates'),
-              selected: onlySaved,
-              onSelected: (v) => setState(() => onlySaved = v)),
-          FilledButton.tonal(
-              onPressed: selected.length < 2
-                  ? null
-                  : () => showAuctorDialog(
-                      context: context,
-                      builder: (_) => CandidateComparison(
-                          candidates: people
-                              .where(
-                                  (p) => selected.contains(p['profile']['id']))
-                              .toList())),
-              child: Text('Compare (${selected.length}/3)'))
-        ])
-      ])),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.watch(workspaceProvider);
+    return Column(children: [
+      OrganizationWorkspace(controller: controller),
       const SizedBox(height: 24),
-      if (error != null) ErrorNotice(error!),
-      if (busy) const Center(child: CircularProgressIndicator()),
-      if (!busy && filtered.isEmpty)
-        const EmptyState('No profiles match yet',
-            'Only candidates who choose discovery are listed. Try another skill or lower the minimum score.'),
-      for (final person in filtered)
-        Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: Surface(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                  Row(children: [
-                    const AuctorMark(size: 42),
-                    const SizedBox(width: 14),
-                    Expanded(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                          Text(person['profile']['display_name'],
-                              style: const TextStyle(
-                                  fontSize: 21, fontWeight: FontWeight.w600)),
-                          Text('@${person['profile']['handle']}')
-                        ])),
-                    Text('${person['score']['total']}/10',
-                        style: TextStyle(
-                            fontSize: 23,
-                            color: Theme.of(context).colorScheme.secondary))
-                  ]),
-                  const SizedBox(height: 14),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final skill in person['skills'])
-                      Chip(label: Text(skill.toString()))
-                  ]),
-                  Text(person['profile']['bio'] ?? ''),
-                  const SizedBox(height: 12),
-                  Wrap(spacing: 8, children: [
-                    TextButton(
-                        onPressed: () => context
-                            .go('/public/${person['profile']['handle']}'),
-                        child: const Text('View evidence')),
-                    TextButton.icon(
-                        onPressed: () async {
-                          try {
-                            await c.api.call(
-                                '/candidates/${person['profile']['id']}/save',
-                                method: person['saved'] == true
-                                    ? 'DELETE'
-                                    : 'POST');
-                            await load();
-                          } catch (e) {
-                            setState(() => error = e.toString());
-                          }
-                        },
-                        icon: Icon(person['saved'] == true
-                            ? Icons.bookmark
-                            : Icons.bookmark_outline),
-                        label:
-                            Text(person['saved'] == true ? 'Saved' : 'Save')),
-                    FilterChip(
-                        label: const Text('Compare'),
-                        selected: selected.contains(person['profile']['id']),
-                        onSelected: (v) => setState(() {
-                              if (v && selected.length < 3) {
-                                selected.add(person['profile']['id']);
-                              } else {
-                                selected.remove(person['profile']['id']);
-                              }
-                            }))
-                  ])
-                ])))
+      RecruiterExplorer(controller: controller)
     ]);
   }
-}
-
-class CandidateComparison extends StatelessWidget {
-  final List<Map<String, dynamic>> candidates;
-  const CandidateComparison({super.key, required this.candidates});
-  @override
-  Widget build(BuildContext context) => AuctorDialog(
-          title: const Text('Evidence side by side'),
-          content: SizedBox(
-              width: 900,
-              child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final p in candidates)
-                          SizedBox(
-                              width: 260,
-                              child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(p['profile']['display_name'],
-                                            style: const TextStyle(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.w600)),
-                                        const SizedBox(height: 12),
-                                        Text('${p['score']['total']}/10',
-                                            style: TextStyle(
-                                                fontSize: 30,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .secondary)),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                            'Skills\n${(p['skills'] as List).join(', ')}'),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                            'Earned badges\n${(p['badges'] as List).join(', ')}'),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                            'Reviewed or owned evidence: ${(p['evidence'] as List).length}'),
-                                        const SizedBox(height: 16),
-                                        for (final e
-                                            in p['score']['components'].entries)
-                                          Text(
-                                              '${e.key}: ${e.value['points']} pts')
-                                      ])))
-                      ]))),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Done'))
-          ]);
 }
 
 class ReviewsPane extends ConsumerStatefulWidget {
@@ -3196,6 +3019,29 @@ class PublicPage extends ConsumerStatefulWidget {
 class _PublicState extends ConsumerState<PublicPage> {
   Map<String, dynamic>? data;
   String? error;
+  Map<String, dynamic> get analyticsContext {
+    final parts = widget.path.split('/');
+    return {'context': parts[1], 'identifier': parts[2]};
+  }
+
+  Future<void> openEvidence(String id) async {
+    try {
+      final value = await ref
+          .read(workspaceProvider)
+          .api
+          .call('/analytics/events', method: 'POST', data: {
+        ...analyticsContext,
+        'kind': 'evidence_open',
+        'evidence_id': id
+      });
+      await openLink(value['url']);
+    } catch (e) {
+      if (mounted) {
+        setState(() => error = e.toString());
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -3206,6 +3052,12 @@ class _PublicState extends ConsumerState<PublicPage> {
             .api
             .call(widget.path, authenticated: false));
         if (mounted) setState(() => data = p);
+        // Analytics failure must never prevent an authorized profile from opening.
+        try {
+          await ref.read(workspaceProvider).api.call('/analytics/events',
+              method: 'POST',
+              data: {...analyticsContext, 'kind': 'profile_view'});
+        } catch (_) {}
       } catch (e) {
         if (mounted) setState(() => error = e.toString());
       }
@@ -3341,7 +3193,7 @@ class _PublicState extends ConsumerState<PublicPage> {
                                             IconButton(
                                                 tooltip: 'Open source',
                                                 onPressed: () =>
-                                                    openLink(e['url']),
+                                                    openEvidence(e['id']),
                                                 icon: const Icon(
                                                     Icons.open_in_new))
                                         ]))),

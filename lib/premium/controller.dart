@@ -85,6 +85,8 @@ class WorkspaceController extends ChangeNotifier {
   Map<String, dynamic>? workspace;
   Map<String, dynamic>? careerDraft;
   Map<String, dynamic>? roleDraft;
+  Map<String, dynamic>? applicationDraft;
+  Map<String, dynamic>? caseStudyDraft;
   Map<String, dynamic>? workbenchDraft;
   Map<String, dynamic>? presentationDraft;
   bool loading = true, busy = false;
@@ -173,6 +175,8 @@ class WorkspaceController extends ChangeNotifier {
         workspace = null;
         careerDraft = null;
         roleDraft = null;
+        applicationDraft = null;
+        caseStudyDraft = null;
         workbenchDraft = null;
         presentationDraft = null;
         await storage.delete(key: 'auctor-session');
@@ -196,11 +200,13 @@ class WorkspaceController extends ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
-    await run(() async {
+  Future<void> logout({bool serverRevoked = false}) async {
+    Future<void> clearSession() async {
       Object? remoteFailure;
       try {
-        await api.call('/auth/logout', method: 'POST');
+        if (!serverRevoked) {
+          await api.call('/auth/logout', method: 'POST');
+        }
       } catch (e) {
         remoteFailure = e;
       }
@@ -210,6 +216,8 @@ class WorkspaceController extends ChangeNotifier {
       workspace = null;
       careerDraft = null;
       roleDraft = null;
+      applicationDraft = null;
+      caseStudyDraft = null;
       workbenchDraft = null;
       presentationDraft = null;
       destination = 0;
@@ -218,7 +226,13 @@ class WorkspaceController extends ChangeNotifier {
             'Signed out on this device. The API could not revoke the previous server session.',
             0);
       }
-    });
+    }
+    if (serverRevoked) {
+      await clearSession();
+      _notify();
+    } else {
+      await run(clearSession);
+    }
   }
 
   Future<void> mutate(String path, {String method = 'POST', Object? data}) =>
